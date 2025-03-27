@@ -128,6 +128,12 @@
           // listen to time slider component's arcgisPropertyChange event. The event's payload contains
           // info about the time slider's current time extent change.
           // Update the earthquakes layer and its layer view based on the time slider's current time extent.
+
+          // Start a TimeSlider animation if not already playing.
+          if (timeSlider.state === "ready") {
+            timeSlider.play();
+          }
+
           timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
             try {
               // Only show earthquakes up until the end of timeSlider's current time extent.
