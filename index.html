@@ -50,16 +50,17 @@
       <arcgis-map item-id="7052c87d2d0742dbb9ed332122b9f2f6" zoom="3" center="-85.512764, 32.04355">
         <arcgis-zoom position="top-left"></arcgis-zoom>
         <arcgis-expand position="top-left" mode="floating">
+          <arcgis-bookmarks></arcgis-bookmarks>
         </arcgis-expand>
       </arcgis-map>
+      <!-- Define the time slider component -->
       <arcgis-time-slider mode="time-window" play-rate="150" loop="True"></arcgis-time-slider>
     </div>
     <script>
       require([
-        "esri/Map","esri/layers/FeatureLayer"], (Map, FeatureLayer) => (async () => {
-         // get the arcgis-map component element and wait for it to be ready
+        "esri/Map","esri/layers/FeatureLayer", "esri/geometry/Extent"], (Map, FeatureLayer, Extent) => (async () => {
         const arcgisMap = document.querySelector("arcgis-map");
-
+        const bookmarks = document.querySelector("arcgis-bookmarks");
 
         // Set a basic symbol on a layer to visualize all features the same way
         const ospreyRenderer = {
@@ -82,31 +83,31 @@
         // })
 
 
-// trackInfo.trackLines = {
-//   renderer: {
-//     type: "simple",
-//     symbol: {
-//       type: "simple-line",
-//       color: "green",
-//       width: 2
-//     }
-//   }
-// };
+        // trackInfo.trackLines = {
+        //   renderer: {
+        //     type: "simple",
+        //     symbol: {
+        //       type: "simple-line",
+        //       color: "green",
+        //       width: 2
+        //     }
+        //   }
+        // };
 
-// trackInfo.previousObservations = {
-//   renderer: {
-//     type: "simple",
-//     symbol: {
-//       type: "simple-marker",
-//       style: "circle",
-//       color: "blue",
-//       size: 10
-//     }
-//   }
-// };
+        // trackInfo.previousObservations = {
+        //   renderer: {
+        //     type: "simple",
+        //     symbol: {
+        //       type: "simple-marker",
+        //       style: "circle",
+        //       color: "blue",
+        //       size: 10
+        //     }
+        //   }
+        // };
 
-        // Osprey telemetry
-        const featureLayer = new FeatureLayer({
+        // Load osprey points layer for visualization
+        const ospreyPoints = new FeatureLayer({
           url: "https://services.arcgis.com/nzS0F0zdNLvs7nc8/arcgis/rest/services/Migration_Routes/FeatureServer/2",
           renderer: ospreyRenderer,
           timeInfo: {
@@ -119,6 +120,7 @@
           }
         });
 
+        // Wait for the map to load
         if (!arcgisMap.ready) {
           arcgisMap.addEventListener("arcgisViewReadyChange", handleMapReady, {
             once: true
@@ -129,12 +131,12 @@
 
         async function handleMapReady() {
           // wait for the layer view to be ready
-          arcgisMap.map.add(featureLayer);
-          const layerView = await arcgisMap.whenLayerView(featureLayer);
+          arcgisMap.map.add(ospreyPoints);
+          const layerView = await arcgisMap.whenLayerView(ospreyPoints);
 
           // Display earthquakes that occurred between 05/25 - 06/17, with a one-day interval
           const timeSlider = document.querySelector("arcgis-time-slider");
-          timeSlider.fullTimeExtent = featureLayer.timeInfo.fullTimeExtent.expandTo("days");
+          timeSlider.fullTimeExtent = ospreyPoints.timeInfo.fullTimeExtent.expandTo("days");
           timeSlider.stops = {
             interval: {
               value: 1,
@@ -146,29 +148,29 @@
           const start = new Date(2016, 7, 1);
           timeSlider.fullTimeExtent = {
             start: start,
-            end: featureLayer.timeInfo.fullTimeExtent.end
+            end: ospreyPoints.timeInfo.fullTimeExtent.end
           };
 
           // Set the time slider initial time extent
           let end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
           timeSlider.timeExtent = { start, end };
 
-          // Start a TimeSlider animation if not already playing.
+          // Start a TimeSlider animation if not already playing
           if (timeSlider.state === "ready") {
             timeSlider.play();
           }
 
           // listen to time slider component's arcgisPropertyChange event. The event's payload contains
           // info about the time slider's current time extent change.
-          // Update the telemetry layer and its layer view based on the time slider's current time extent.
+          // Update the telemetry layer and its layer view based on the time slider's current time extent
 
           timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
             try {
               // Only show points up until the end of timeSlider's current time extent.
               const date = new Date(timeSlider.timeExtent.end).toISOString().replace("T", " ").replace("Z", "");
-              featureLayer.definitionExpression = `timestamp <= Timestamp '${date}'`;
+              ospreyPoints.definitionExpression = `timestamp <= Timestamp '${date}'`;
 
-              // Gray out points that happened before the time slider's current timeExtent.
+              // Gray out points that happened before the time slider's current timeExtent
               layerView.featureEffect = {
                 filter: {
                   timeExtent: timeSlider.timeExtent,
@@ -176,6 +178,27 @@
                 },
                 excludedEffect: "grayscale(20%) opacity(50%)"
               };
+
+              // // Try to update map extent based on date
+              console.log("Current Time Extent:", timeSlider.timeExtent);
+              const targetDate = new Date("2016-09-01T00:00:00Z")
+
+              // Check if the target date is within the current time extent
+              if (timeSlider.timeExtent.start <= targetDate && timeSlider.timeExtent.end >= targetDate) {
+                        console.log("Target date is within range! Changing extent...");
+
+                        // Define the new extent
+                        const newExtent = new Extent({
+                            xmin: -130,
+                            ymin: 20,
+                            xmax: -60,
+                            ymax: 55,
+                            spatialReference: { wkid: 4326 }
+                        });
+
+                        // Smoothly transition the view to the new extent
+                        arcgisMap.view.goTo(newExtent, { duration: 3000 });
+                    }
               
 
             } catch (error) {
