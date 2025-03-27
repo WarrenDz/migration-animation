@@ -47,7 +47,7 @@
 
   <body>
     <div id="container">
-      <arcgis-map zoom="3" center="-85.512764, 32.04355">
+      <arcgis-map item-id="7052c87d2d0742dbb9ed332122b9f2f6" zoom="3" center="-85.512764, 32.04355">
         <arcgis-zoom position="top-left"></arcgis-zoom>
         <arcgis-expand position="top-left" mode="floating">
           <arcgis-legend></arcgis-legend>
@@ -61,7 +61,6 @@
          // get the arcgis-map component element and wait for it to be ready
         const arcgisMap = document.querySelector("arcgis-map");
 
-
         // Osprey telemetry.
         const featureLayer = new FeatureLayer({
           url: "https://services.arcgis.com/nzS0F0zdNLvs7nc8/arcgis/rest/services/Migration_Routes/FeatureServer/2",
@@ -74,11 +73,6 @@
           }
         });
 
-        arcgisMap.map = new Map({
-          basemap: "dark-gray-vector",
-          layers: [featureLayer]
-        });
-
         if (!arcgisMap.ready) {
           arcgisMap.addEventListener("arcgisViewReadyChange", handleMapReady, {
             once: true
@@ -89,6 +83,7 @@
 
         async function handleMapReady() {
           // wait for the layer view to be ready
+          arcgisMap.map.add(featureLayer);
           const layerView = await arcgisMap.whenLayerView(featureLayer);
 
           // Display earthquakes that occurred between 05/25 - 06/17, with a one-day interval
