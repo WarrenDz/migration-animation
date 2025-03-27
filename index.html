@@ -9,7 +9,7 @@
     <script type="module" src="https://js.arcgis.com/calcite-components/3.0.3/calcite.esm.js"></script>
 
     <!-- Load the ArcGIS Maps SDK for JavaScript from CDN -->
-    <link rel="stylesheet" href="https://js.arcgis.com/4.32/esri/themes/dark/main.css" />
+    <link rel="stylesheet" href="https://js.arcgis.com/4.32/esri/themes/light/main.css" />
     <script src="https://js.arcgis.com/4.32/"></script>
 
     <!-- Load Map components from CDN-->
@@ -50,10 +50,9 @@
       <arcgis-map item-id="7052c87d2d0742dbb9ed332122b9f2f6" zoom="3" center="-85.512764, 32.04355">
         <arcgis-zoom position="top-left"></arcgis-zoom>
         <arcgis-expand position="top-left" mode="floating">
-          <arcgis-legend></arcgis-legend>
         </arcgis-expand>
       </arcgis-map>
-      <arcgis-time-slider mode="time-window" play-rate="100"></arcgis-time-slider>
+      <arcgis-time-slider mode="time-window" play-rate="150" loop="True"></arcgis-time-slider>
     </div>
     <script>
       require([
@@ -61,15 +60,62 @@
          // get the arcgis-map component element and wait for it to be ready
         const arcgisMap = document.querySelector("arcgis-map");
 
-        // Osprey telemetry.
+
+        // Set a basic symbol on a layer to visualize all features the same way
+        const ospreyRenderer = {
+          type: "simple",  // autocasts as new SimpleRenderer()
+          symbol: {
+            type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
+            size: 6,
+            color: "black",
+            outline: {  // autocasts as new SimpleLineSymbol()
+              width: 0.5,
+              color: "white"
+            }
+          }
+        };
+
+        // // Define track info for the layer
+        // const ospreyTrackInfo = new TrackInfo({
+        //     enabled: "True",
+        //     timeField: "timestamp"
+        // })
+
+
+// trackInfo.trackLines = {
+//   renderer: {
+//     type: "simple",
+//     symbol: {
+//       type: "simple-line",
+//       color: "green",
+//       width: 2
+//     }
+//   }
+// };
+
+// trackInfo.previousObservations = {
+//   renderer: {
+//     type: "simple",
+//     symbol: {
+//       type: "simple-marker",
+//       style: "circle",
+//       color: "blue",
+//       size: 10
+//     }
+//   }
+// };
+
+        // Osprey telemetry
         const featureLayer = new FeatureLayer({
           url: "https://services.arcgis.com/nzS0F0zdNLvs7nc8/arcgis/rest/services/Migration_Routes/FeatureServer/2",
+          renderer: ospreyRenderer,
           timeInfo: {
             startField: "timestamp", // name of the date field
             interval: {
               unit: "days", // set time interval to one day
               value: 1
-            }
+            },
+            trackIdField: "individual_local_identifier"
           }
         });
 
@@ -96,28 +142,33 @@
             }
           };
 
-          // set time slider's full extent to 5/25/5019 - until end date of layer's fullTimeExtent
+          // set time slider's full extent to 7/01/5016 - until end date of layer's fullTimeExtent
           const start = new Date(2016, 7, 1);
           timeSlider.fullTimeExtent = {
             start: start,
             end: featureLayer.timeInfo.fullTimeExtent.end
           };
 
-          // Set the time slider initial time extent to show earthquakes between 05/25-05/26
+          // Set the time slider initial time extent
           let end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
           timeSlider.timeExtent = { start, end };
 
+          // Start a TimeSlider animation if not already playing.
+          if (timeSlider.state === "ready") {
+            timeSlider.play();
+          }
 
           // listen to time slider component's arcgisPropertyChange event. The event's payload contains
           // info about the time slider's current time extent change.
-          // Update the earthquakes layer and its layer view based on the time slider's current time extent.
+          // Update the telemetry layer and its layer view based on the time slider's current time extent.
+
           timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
             try {
-              // Only show earthquakes up until the end of timeSlider's current time extent.
+              // Only show points up until the end of timeSlider's current time extent.
               const date = new Date(timeSlider.timeExtent.end).toISOString().replace("T", " ").replace("Z", "");
               featureLayer.definitionExpression = `timestamp <= Timestamp '${date}'`;
 
-              // Gray out earthquakes that happened before the time slider's current timeExtent.
+              // Gray out points that happened before the time slider's current timeExtent.
               layerView.featureEffect = {
                 filter: {
                   timeExtent: timeSlider.timeExtent,
@@ -125,68 +176,12 @@
                 },
                 excludedEffect: "grayscale(20%) opacity(50%)"
               };
+              
 
-              // // Run statistics on earthquakes within the current time extent.
-              // const statQuery = layerView.featureEffect.filter.createQuery();
-              // statQuery.outStatistics = [magMax, magAvg, magMin, tremorCount, avgDepth];
-
-              // const result = await layer.queryFeatures(statQuery);
-              // statsDiv.innerHTML = "";
-
-              // if (result.error) {
-              //   console.error(result.error);
-              //   return;
-              // }
-
-              // // results returned from the query and populate the statsDiv with the results.
-              // if (result.features.length >= 1) {
-              //   const attributes = result.features[0].attributes;
-
-              //   // Get statistics fields and their values from the query results.
-              //   // htmls is an array of strings that contain the statistics fields and their values.
-              //   const htmls = Object.keys(statsFields).map(name => {
-              //     if (attributes[name] != null) {
-              //       return `<br/>${statsFields[name]}: <b><span>${attributes[name].toFixed(2)}</span></b>`;
-              //     }
-              //     return '';
-              //   }).filter(html => html !== '');
-
-              //   // Display the number of earthquakes that occurred within the current time extent.
-              //   const yearHtml = `
-              //     <span>${result.features[0].attributes["tremor_count"]}</span> earthquakes were recorded between
-              //     ${timeSlider.timeExtent.start.toLocaleDateString()} -
-              //     ${timeSlider.timeExtent.end.toLocaleDateString()}.<br/>
-              //   `;
-
-              //   statsDiv.innerHTML = htmls.length ? yearHtml + htmls.join('') : yearHtml;
-              // }
             } catch (error) {
               console.error(error);
             }
           });
-
-
-          // // Create statistics definition based on given field and stats type.
-          // const createStatistic = (field, outFieldName, type) => ({
-          //   onStatisticField: field,
-          //   outStatisticFieldName: outFieldName,
-          //   statisticType: type
-          // });
-
-          // // Create various statistics definitions for the earthquakes layer.
-          // const avgDepth = createStatistic("depth", "Average_depth", "avg");
-          // const magMax = createStatistic("mag", "Max_magnitude", "max");
-          // const magAvg = createStatistic("mag", "Average_magnitude", "avg");
-          // const magMin = createStatistic("mag", "Min_magnitude", "min");
-          // const tremorCount = createStatistic("mag", "tremor_count", "count");
-
-          // // Define statistics fields and their display names.
-          // const statsFields = {
-          //   Max_magnitude: "Max magnitude",
-          //   Average_magnitude: "Average magnitude",
-          //   Min_magnitude: "Min magnitude",
-          //   Average_depth: "Average Depth"
-          // };
          }
       })());
     </script>
