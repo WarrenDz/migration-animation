@@ -53,7 +53,7 @@
           <arcgis-legend></arcgis-legend>
         </arcgis-expand>
       </arcgis-map>
-      <arcgis-time-slider mode="time-window" play-rate="100"></arcgis-time-slider>
+      <arcgis-time-slider mode="time-window" play-rate="150" loop="True"></arcgis-time-slider>
     </div>
     <script>
       require([
@@ -61,15 +61,32 @@
          // get the arcgis-map component element and wait for it to be ready
         const arcgisMap = document.querySelector("arcgis-map");
 
+
+        // Set a basic symbol on a layer to visualize all features the same way
+        const ospreyRenderer = {
+          type: "simple",  // autocasts as new SimpleRenderer()
+          symbol: {
+            type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
+            size: 6,
+            color: "black",
+            outline: {  // autocasts as new SimpleLineSymbol()
+              width: 0.5,
+              color: "white"
+            }
+          }
+        };
+
         // Osprey telemetry.
         const featureLayer = new FeatureLayer({
           url: "https://services.arcgis.com/nzS0F0zdNLvs7nc8/arcgis/rest/services/Migration_Routes/FeatureServer/2",
+          renderer: ospreyRenderer,
           timeInfo: {
             startField: "timestamp", // name of the date field
             interval: {
               unit: "days", // set time interval to one day
               value: 1
-            }
+            },
+            trackIdField: "individual_local_identifier"
           }
         });
 
@@ -117,14 +134,14 @@
               const date = new Date(timeSlider.timeExtent.end).toISOString().replace("T", " ").replace("Z", "");
               featureLayer.definitionExpression = `timestamp <= Timestamp '${date}'`;
 
-              // Gray out earthquakes that happened before the time slider's current timeExtent.
-              layerView.featureEffect = {
-                filter: {
-                  timeExtent: timeSlider.timeExtent,
-                  geometry: arcgisMap.extent
-                },
-                excludedEffect: "grayscale(20%) opacity(50%)"
-              };
+              // // Gray out earthquakes that happened before the time slider's current timeExtent.
+              // layerView.featureEffect = {
+              //   filter: {
+              //     timeExtent: timeSlider.timeExtent,
+              //     geometry: arcgisMap.extent
+              //   },
+              //   excludedEffect: "grayscale(20%) opacity(50%)"
+              // };
 
               // // Run statistics on earthquakes within the current time extent.
               // const statQuery = layerView.featureEffect.filter.createQuery();
