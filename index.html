@@ -54,7 +54,7 @@
         </arcgis-expand>
       </arcgis-map>
       <!-- Define the time slider component -->
-      <arcgis-time-slider mode="time-window" play-rate="150" loop="True"></arcgis-time-slider>
+      <arcgis-time-slider mode="time-window" play-rate="25"></arcgis-time-slider>
     </div>
     <script>
       require([
@@ -66,9 +66,9 @@
 
         // Define a the mapping between slides and time ranges
         const choreographyMapping = {
-          "#slide1": { start: "2016-08-01T00:00:00Z", end: "2016-09-01T00:00:00Z", bookmarkFrom: "Ohio", bookmarkTo: "Cuba" },
-          "#slide2": { start: "2016-09-02T00:00:00Z", end: "2016-10-10T00:00:00Z", bookmarkFrom: "Cuba", bookmarkTo: "Maracaibo" },
-          "#slide3": { start: "2016-10-11T00:00:00Z", end: "2016-11-21T00:00:00Z", bookmarkFrom: "Maracaibo", bookmarkTo: "Maracaibo" },
+          "#slide1": { start: "2016-08-15T00:00:00Z", end: "2016-10-06T00:00:00Z", bookmarkStart: "Ohio", bookmarkEnd: "Ohio" },
+          "#slide2": { start: "2016-10-06T00:00:00Z", end: "2016-10-20T00:00:00Z", bookmarkStart: "Cuba", bookmarkEnd: "Cuba" },
+          "#slide3": { start: "2016-10-20T00:00:00Z", end: "2016-11-21T00:00:00Z", bookmarkStart: "Maracaibo", bookmarkEnd: "Maracaibo" },
         }
 
 
@@ -93,7 +93,7 @@
           timeInfo: {
             startField: "timestamp", // name of the date field
             interval: {
-              unit: "days", // set time interval to one day
+              unit: "hours", // set time interval to one day
               value: 1
             },
             trackIdField: "individual_local_identifier"
@@ -125,20 +125,17 @@
               const hash = window.location.hash;
               console.log(`Hash: ${hash}`);
               if (choreographyMapping[hash]) {
-                // Set the initial map extent by the bookmarkFrom
-                bookmarkFrom = choreographyMapping[hash].bookmarkFrom;
+                // Set the initial map extent by the bookmarkStart
+                bookmarkStart = choreographyMapping[hash].bookmarkStart;
                 const bookmarks = Array.from(bookmarksWidget.bookmarks);
-                const targetBookmark = bookmarks.find(b => b.name === bookmarkFrom);
+                const fromBookmark = bookmarks.find(b => b.name === bookmarkStart);
 
-                // Find the bookmark by name
-                bookmarkTo = choreographyMapping[hash].bookmarkTo;
-
-                // If the bookmark exists, navigate to it
-                if (targetBookmark) {
-                  arcgisMap.goTo(targetBookmark.viewpoint, { duration: 0 });  // Navigates to the bookmark view
-                } else {
-                  console.error(`Bookmark "${bookmarkFrom}" not found!`);
-                } 
+                // // If the bookmark exists, navigate to it
+                // if (fromBookmark) {
+                //   arcgisMap.goTo(fromBookmark.viewpoint, { duration: 0 });  // Navigates to the bookmark view
+                // } else {
+                //   console.error(`Bookmark "${bookmarkStart}" not found!`);
+                // } 
 
                 // Configure the time sliders full extent with the start and end time from choreography
                 const startFrame = new Date(choreographyMapping[hash].start);
@@ -149,7 +146,7 @@
                 timeSlider.stops = {
                   interval: {
                     value: 1,
-                    unit: "days"
+                    unit: "hours"
                   }
                 };
 
@@ -162,12 +159,23 @@
                 if (timeSlider.state === "ready") {
                   timeSlider.play();
                 }
+
+                // Find the bookmark by name
+                bookmarkEnd = choreographyMapping[hash].bookmarkEnd;
+                const toBookmark = bookmarks.find(b => b.name === bookmarkEnd);
+                // If the bookmark exists, navigate to it
+                if (toBookmark) {
+                  arcgisMap.goTo(toBookmark.viewpoint, { duration: 6000 });  // Navigates to the bookmark view
+                } else {
+                  console.error(`Bookmark "${bookmarkEnd}" not found!`);
+                } 
               }
           }
 
-            updateChoreographyFromHash();
-            // Listen for hash changes to update the choreography
-            window.addEventListener("hashchange", updateChoreographyFromHash);
+          updateChoreographyFromHash();
+
+          // Listen for hash changes to update the choreography
+          window.addEventListener("hashchange", updateChoreographyFromHash);
 
           // Add an event listener to the time slider to watch time extent changes
           timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
@@ -188,19 +196,17 @@
               // <-- EVENTUALLY REMOVE
 
                 // Check if the target date is within the current time extent
-                if (timeSlider.timeExtent.start <= date && timeSlider.timeExtent.end >= date) {
-                          // Find the bookmark by name
-                          const bookmarks = Array.from(bookmarksWidget.bookmarks);
-                          const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
-                          // If the bookmark exists, navigate to it
-                          if (targetBookmark) {
-                            arcgisMap.goTo(targetBookmark.viewpoint, { duration: 4000 });  // Navigates to the bookmark view
-                        } else {
-                            console.error(`Bookmark "${bookmarkName}" not found!`);
-                        }
-                      }   
-                // }
-              // )
+              if (timeSlider.timeExtent.start <= date && timeSlider.timeExtent.end >= date) {
+                        // Find the bookmark by name
+                        const bookmarks = Array.from(bookmarksWidget.bookmarks);
+                        const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
+                        // If the bookmark exists, navigate to it
+                        if (targetBookmark) {
+                          arcgisMap.goTo(targetBookmark.viewpoint, { duration: 3000 });  // Navigates to the bookmark view
+                      } else {
+                          console.error(`Bookmark "${bookmarkName}" not found!`);
+                      }
+                    }
             } catch (error) {
                 console.error(error);
             }
