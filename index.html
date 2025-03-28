@@ -66,20 +66,20 @@
 
         // Define a the mapping between slides and time ranges
         const choreographyMapping = {
-          "#slide1": { start: "2016-08-01T00:00:00Z", end: "2016-09-01T00:00:00Z", bookmark: "Ohio" },
-          "#slide2": { start: "2016-09-02T00:00:00Z", end: "2016-10-10T00:00:00Z", bookmark: "Cuba" },
-          "#slide3": { start: "2016-10-11T00:00:00Z", end: "2016-11-21T00:00:00Z", bookmark: "Maracaibo" }
+          "#slide1": { start: "2016-08-01T00:00:00Z", end: "2016-09-01T00:00:00Z", bookmarkFrom: "Ohio", bookmarkTo: "Cuba" },
+          "#slide2": { start: "2016-09-02T00:00:00Z", end: "2016-10-10T00:00:00Z", bookmarkFrom: "Cuba", bookmarkTo: "Maracaibo" },
+          "#slide3": { start: "2016-10-11T00:00:00Z", end: "2016-11-21T00:00:00Z", bookmarkFrom: "Maracaibo", bookmarkTo: "Maracaibo" },
         }
 
 
         // Set a basic symbol on a layer to visualize all features the same way
         const ospreyRenderer = {
-          type: "simple",  // autocasts as new SimpleRenderer()
+          type: "simple",
           symbol: {
-            type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
+            type: "simple-marker",
             size: 10,
             color: "black",
-            outline: {  // autocasts as new SimpleLineSymbol()
+            outline: {
               width: 0.5,
               color: "white"
             }
@@ -118,32 +118,56 @@
           const layerView = await arcgisMap.whenLayerView(ospreyPoints);
 
           // Define the time slider component
-          // set the time slider's full extent to the layer's fullTimeExtent
-          // and set the time slider's stops to 1 day intervals
           const timeSlider = document.querySelector("arcgis-time-slider");
-          timeSlider.fullTimeExtent = ospreyPoints.timeInfo.fullTimeExtent.expandTo("days");
-          timeSlider.stops = {
-            interval: {
-              value: 1,
-              unit: "days"
-            }
-          };
 
-          // set time slider's full extent to 7/01/5016 - until end date of layer's fullTimeExtent
-          const start = new Date(2016, 7, 1);
-          timeSlider.fullTimeExtent = {
-            start: start,
-            end: ospreyPoints.timeInfo.fullTimeExtent.end
-          };
+          // Define function to update the choreography based on the hash
+          function updateChoreographyFromHash() {
+              const hash = window.location.hash;
+              console.log(`Hash: ${hash}`);
+              if (choreographyMapping[hash]) {
+                // Set the initial map extent by the bookmarkFrom
+                bookmarkFrom = choreographyMapping[hash].bookmarkFrom;
+                const bookmarks = Array.from(bookmarksWidget.bookmarks);
+                const targetBookmark = bookmarks.find(b => b.name === bookmarkFrom);
 
-          // Set the time slider initial time extent
-          let end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
-          timeSlider.timeExtent = { start, end };
+                // Find the bookmark by name
+                bookmarkTo = choreographyMapping[hash].bookmarkTo;
 
-          // Start a TimeSlider animation if not already playing
-          // if (timeSlider.state === "ready") {
-          //   timeSlider.play();
-          // }
+                // If the bookmark exists, navigate to it
+                if (targetBookmark) {
+                  arcgisMap.goTo(targetBookmark.viewpoint, { duration: 0 });  // Navigates to the bookmark view
+                } else {
+                  console.error(`Bookmark "${bookmarkFrom}" not found!`);
+                } 
+
+                // Configure the time sliders full extent with the start and end time from choreography
+                const startFrame = new Date(choreographyMapping[hash].start);
+                const endFrame = new Date(choreographyMapping[hash].end);
+                timeSlider.fullTimeExtent = {start: startFrame, end: endFrame};
+
+                // Set the time slider's stops to 1 day intervals
+                timeSlider.stops = {
+                  interval: {
+                    value: 1,
+                    unit: "days"
+                  }
+                };
+
+                // Set the time slider initial time extent
+                let start = startFrame
+                let end = new Date(startFrame.getTime() + 24 * 60 * 60 * 1000);
+                timeSlider.timeExtent = { start, end };
+                
+                // Start a TimeSlider animation if not already playing
+                if (timeSlider.state === "ready") {
+                  timeSlider.play();
+                }
+              }
+          }
+
+            updateChoreographyFromHash();
+            // Listen for hash changes to update the choreography
+            window.addEventListener("hashchange", updateChoreographyFromHash);
 
           // Add an event listener to the time slider to watch time extent changes
           timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
@@ -162,31 +186,6 @@
                 excludedEffect: "grayscale(20%) opacity(50%)"
               };
               // <-- EVENTUALLY REMOVE
-
-              // Define function to update the choreography based on the hash
-              function updateChoreographyFromHash() {
-                  const hash = window.location.hash;
-                  console.log(`Hash: ${hash}`);
-                  if (choreographyMapping[hash]) {
-                        // Find the bookmark by name
-                        bookmarkName = choreographyMapping[hash].bookmark;
-                        const bookmarks = Array.from(bookmarksWidget.bookmarks);
-                        const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
-                        // If the bookmark exists, navigate to it
-                        if (targetBookmark) {
-                          arcgisMap.goTo(targetBookmark.viewpoint, { duration: 4000 });  // Navigates to the bookmark view
-                      } else {
-                          console.error(`Bookmark "${bookmarkName}" not found!`);
-                      }
-                    }}
-
-                updateChoreographyFromHash();
-                // Listen for hash changes to update the choreography
-                window.addEventListener("hashchange", updateChoreographyFromHash);
-
-
-
-
 
                 // Check if the target date is within the current time extent
                 if (timeSlider.timeExtent.start <= date && timeSlider.timeExtent.end >= date) {
