@@ -64,13 +64,13 @@
         const arcgisMap = document.querySelector("arcgis-map");
         const bookmarksWidget = document.querySelector("arcgis-bookmarks");
 
-        // Create an object that maps dates to bookmarks
-        // This will be used to set the bookmarks based on the date
-        const dateBookmarkMap = {
-            "2016-09-01T00:00:00Z": "Ohio",  // Specific date
-            "2016-10-10T00:00:00Z": "Cuba",  // Specific date
-            "2016-10-21T00:00:00Z": "Maracaibo"  // Specific date
-        };
+        // Define a the mapping between slides and time ranges
+        const choreographyMapping = {
+          "#slide1": { start: "2016-08-01T00:00:00Z", end: "2016-09-01T00:00:00Z", bookmark: "Ohio" },
+          "#slide2": { start: "2016-09-02T00:00:00Z", end: "2016-10-10T00:00:00Z", bookmark: "Cuba" },
+          "#slide3": { start: "2016-10-11T00:00:00Z", end: "2016-11-21T00:00:00Z", bookmark: "Maracaibo" }
+        }
+
 
         // Set a basic symbol on a layer to visualize all features the same way
         const ospreyRenderer = {
@@ -141,9 +141,9 @@
           timeSlider.timeExtent = { start, end };
 
           // Start a TimeSlider animation if not already playing
-          if (timeSlider.state === "ready") {
-            timeSlider.play();
-          }
+          // if (timeSlider.state === "ready") {
+          //   timeSlider.play();
+          // }
 
           // Add an event listener to the time slider to watch time extent changes
           timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
@@ -163,10 +163,30 @@
               };
               // <-- EVENTUALLY REMOVE
 
-              // Get dates and bookmarks from the bookmark dictionary
-              Object.keys(dateBookmarkMap).forEach((dateStr) => {
-                const date = new Date(dateStr);
-                const bookmarkName = dateBookmarkMap[dateStr];
+              // Define function to update the choreography based on the hash
+              function updateChoreographyFromHash() {
+                  const hash = window.location.hash;
+                  console.log(`Hash: ${hash}`);
+                  if (choreographyMapping[hash]) {
+                        // Find the bookmark by name
+                        bookmarkName = choreographyMapping[hash].bookmark;
+                        const bookmarks = Array.from(bookmarksWidget.bookmarks);
+                        const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
+                        // If the bookmark exists, navigate to it
+                        if (targetBookmark) {
+                          arcgisMap.goTo(targetBookmark.viewpoint, { duration: 4000 });  // Navigates to the bookmark view
+                      } else {
+                          console.error(`Bookmark "${bookmarkName}" not found!`);
+                      }
+                    }}
+
+                updateChoreographyFromHash();
+                // Listen for hash changes to update the choreography
+                window.addEventListener("hashchange", updateChoreographyFromHash);
+
+
+
+
 
                 // Check if the target date is within the current time extent
                 if (timeSlider.timeExtent.start <= date && timeSlider.timeExtent.end >= date) {
@@ -180,8 +200,8 @@
                             console.error(`Bookmark "${bookmarkName}" not found!`);
                         }
                       }   
-                }
-              )
+                // }
+              // )
             } catch (error) {
                 console.error(error);
             }
