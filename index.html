@@ -54,7 +54,7 @@
         </arcgis-expand>
       </arcgis-map>
       <!-- Define the time slider component -->
-      <arcgis-time-slider mode="time-window" play-rate="150" loop="True"></arcgis-time-slider>
+      <arcgis-time-slider mode="time-window" play-rate="25"></arcgis-time-slider>
     </div>
     <script>
       require([
@@ -64,22 +64,22 @@
         const arcgisMap = document.querySelector("arcgis-map");
         const bookmarksWidget = document.querySelector("arcgis-bookmarks");
 
-        // Create an object that maps dates to bookmarks
-        // This will be used to set the bookmarks based on the date
-        const dateBookmarkMap = {
-            "2016-09-01T00:00:00Z": "Ohio",  // Specific date
-            "2016-10-10T00:00:00Z": "Cuba",  // Specific date
-            "2016-10-21T00:00:00Z": "Maracaibo"  // Specific date
-        };
+        // Define a the mapping between slides and time ranges
+        const choreographyMapping = {
+          "#slide1": { start: "2016-08-15T00:00:00Z", end: "2016-10-06T00:00:00Z", bookmark: "Ohio" },
+          "#slide2": { start: "2016-10-06T00:00:00Z", end: "2016-10-20T00:00:00Z", bookmark: "Cuba" },
+          "#slide3": { start: "2016-10-20T00:00:00Z", end: "2016-11-21T00:00:00Z", bookmark: "Maracaibo" },
+        }
+
 
         // Set a basic symbol on a layer to visualize all features the same way
         const ospreyRenderer = {
-          type: "simple",  // autocasts as new SimpleRenderer()
+          type: "simple",
           symbol: {
-            type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
+            type: "simple-marker",
             size: 10,
             color: "black",
-            outline: {  // autocasts as new SimpleLineSymbol()
+            outline: {
               width: 0.5,
               color: "white"
             }
@@ -93,7 +93,7 @@
           timeInfo: {
             startField: "timestamp", // name of the date field
             interval: {
-              unit: "days", // set time interval to one day
+              unit: "hours", // set time interval to one day
               value: 1
             },
             trackIdField: "individual_local_identifier"
@@ -118,32 +118,55 @@
           const layerView = await arcgisMap.whenLayerView(ospreyPoints);
 
           // Define the time slider component
-          // set the time slider's full extent to the layer's fullTimeExtent
-          // and set the time slider's stops to 1 day intervals
           const timeSlider = document.querySelector("arcgis-time-slider");
-          timeSlider.fullTimeExtent = ospreyPoints.timeInfo.fullTimeExtent.expandTo("days");
-          timeSlider.stops = {
-            interval: {
-              value: 1,
-              unit: "days"
-            }
-          };
 
-          // set time slider's full extent to 7/01/5016 - until end date of layer's fullTimeExtent
-          const start = new Date(2016, 7, 1);
-          timeSlider.fullTimeExtent = {
-            start: start,
-            end: ospreyPoints.timeInfo.fullTimeExtent.end
-          };
+          // Define function to update the choreography based on the hash
+          function updateChoreographyFromHash() {
+              const hash = window.location.hash;
+              console.log(`Hash: ${hash}`);
+              if (choreographyMapping[hash]) {
+                // Set the initial map extent by the bookmarkStart
+                bookmark = choreographyMapping[hash].bookmark;
+                const bookmarks = Array.from(bookmarksWidget.bookmarks);
+                const targetBookmark = bookmarks.find(b => b.name === bookmark);
 
-          // Set the time slider initial time extent
-          let end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
-          timeSlider.timeExtent = { start, end };
+                // Find the bookmark by name
+                // If the bookmark exists, navigate to it
+                if (targetBookmark) {
+                  arcgisMap.goTo(targetBookmark.viewpoint, { duration: 6000 });  // Navigates to the bookmark view
+                } else {
+                  console.error(`Bookmark "${bookmark}" not found!`);
+                } 
 
-          // Start a TimeSlider animation if not already playing
-          if (timeSlider.state === "ready") {
-            timeSlider.play();
+                // Configure the time sliders full extent with the start and end time from choreography
+                const startFrame = new Date(choreographyMapping[hash].start);
+                const endFrame = new Date(choreographyMapping[hash].end);
+                timeSlider.fullTimeExtent = {start: startFrame, end: endFrame};
+
+                // Set the time slider's stops to 1 day intervals
+                timeSlider.stops = {
+                  interval: {
+                    value: 1,
+                    unit: "hours"
+                  }
+                };
+
+                // Set the time slider initial time extent
+                let start = startFrame
+                let end = new Date(startFrame.getTime() + 24 * 60 * 60 * 1000);
+                timeSlider.timeExtent = { start, end };
+                
+                // Start a TimeSlider animation if not already playing
+                if (timeSlider.state === "ready") {
+                  timeSlider.play();
+                }
+              }
           }
+
+          updateChoreographyFromHash();
+
+          // Listen for hash changes to update the choreography
+          window.addEventListener("hashchange", updateChoreographyFromHash);
 
           // Add an event listener to the time slider to watch time extent changes
           timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
@@ -163,25 +186,18 @@
               };
               // <-- EVENTUALLY REMOVE
 
-              // Get dates and bookmarks from the bookmark dictionary
-              Object.keys(dateBookmarkMap).forEach((dateStr) => {
-                const date = new Date(dateStr);
-                const bookmarkName = dateBookmarkMap[dateStr];
-
                 // Check if the target date is within the current time extent
-                if (timeSlider.timeExtent.start <= date && timeSlider.timeExtent.end >= date) {
-                          // Find the bookmark by name
-                          const bookmarks = Array.from(bookmarksWidget.bookmarks);
-                          const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
-                          // If the bookmark exists, navigate to it
-                          if (targetBookmark) {
-                            arcgisMap.goTo(targetBookmark.viewpoint, { duration: 4000 });  // Navigates to the bookmark view
-                        } else {
-                            console.error(`Bookmark "${bookmarkName}" not found!`);
-                        }
-                      }   
-                }
-              )
+              if (timeSlider.timeExtent.start <= date && timeSlider.timeExtent.end >= date) {
+                        // Find the bookmark by name
+                        const bookmarks = Array.from(bookmarksWidget.bookmarks);
+                        const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
+                        // If the bookmark exists, navigate to it
+                        if (targetBookmark) {
+                          arcgisMap.goTo(targetBookmark.viewpoint, { duration: 3000 });  // Navigates to the bookmark view
+                      } else {
+                          console.error(`Bookmark "${bookmarkName}" not found!`);
+                      }
+                    }
             } catch (error) {
                 console.error(error);
             }
