@@ -58,16 +58,26 @@
     </div>
     <script>
       require([
-        "esri/Map","esri/layers/FeatureLayer", "esri/geometry/Extent"], (Map, FeatureLayer, Extent) => (async () => {
+        "esri/Map","esri/layers/FeatureLayer", "esri/geometry/Extent", "esri/widgets/Bookmarks"], (Map, FeatureLayer, Extent, Bookmarks) => (async () => {
+        
+        // Define the map and bookmarks components
         const arcgisMap = document.querySelector("arcgis-map");
-        const bookmarks = document.querySelector("arcgis-bookmarks");
+        const bookmarksWidget = document.querySelector("arcgis-bookmarks");
+
+        // Create an object that maps dates to bookmarks
+        // This will be used to set the bookmarks based on the date
+        const dateBookmarkMap = {
+            "2016-09-01T00:00:00Z": "Ohio",  // Specific date
+            "2016-10-10T00:00:00Z": "Cuba",  // Specific date
+            "2016-10-21T00:00:00Z": "Maracaibo"  // Specific date
+        };
 
         // Set a basic symbol on a layer to visualize all features the same way
         const ospreyRenderer = {
           type: "simple",  // autocasts as new SimpleRenderer()
           symbol: {
             type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
-            size: 6,
+            size: 10,
             color: "black",
             outline: {  // autocasts as new SimpleLineSymbol()
               width: 0.5,
@@ -75,36 +85,6 @@
             }
           }
         };
-
-        // // Define track info for the layer
-        // const ospreyTrackInfo = new TrackInfo({
-        //     enabled: "True",
-        //     timeField: "timestamp"
-        // })
-
-
-        // trackInfo.trackLines = {
-        //   renderer: {
-        //     type: "simple",
-        //     symbol: {
-        //       type: "simple-line",
-        //       color: "green",
-        //       width: 2
-        //     }
-        //   }
-        // };
-
-        // trackInfo.previousObservations = {
-        //   renderer: {
-        //     type: "simple",
-        //     symbol: {
-        //       type: "simple-marker",
-        //       style: "circle",
-        //       color: "blue",
-        //       size: 10
-        //     }
-        //   }
-        // };
 
         // Load osprey points layer for visualization
         const ospreyPoints = new FeatureLayer({
@@ -122,6 +102,8 @@
 
         // Wait for the map to load
         if (!arcgisMap.ready) {
+          // Listen for when the readiness of the map changes
+          // and call the handleMapReady function
           arcgisMap.addEventListener("arcgisViewReadyChange", handleMapReady, {
             once: true
           });
@@ -129,12 +111,15 @@
           handleMapReady();
         }
 
+        // Do these things once the map is ready
         async function handleMapReady() {
-          // wait for the layer view to be ready
+          // Add the telemetry layer to the map
           arcgisMap.map.add(ospreyPoints);
           const layerView = await arcgisMap.whenLayerView(ospreyPoints);
 
-          // Display earthquakes that occurred between 05/25 - 06/17, with a one-day interval
+          // Define the time slider component
+          // set the time slider's full extent to the layer's fullTimeExtent
+          // and set the time slider's stops to 1 day intervals
           const timeSlider = document.querySelector("arcgis-time-slider");
           timeSlider.fullTimeExtent = ospreyPoints.timeInfo.fullTimeExtent.expandTo("days");
           timeSlider.stops = {
@@ -160,12 +145,10 @@
             timeSlider.play();
           }
 
-          // listen to time slider component's arcgisPropertyChange event. The event's payload contains
-          // info about the time slider's current time extent change.
-          // Update the telemetry layer and its layer view based on the time slider's current time extent
-
+          // Add an event listener to the time slider to watch time extent changes
           timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
             try {
+              // EVENTUALLY REMOVE -->
               // Only show points up until the end of timeSlider's current time extent.
               const date = new Date(timeSlider.timeExtent.end).toISOString().replace("T", " ").replace("Z", "");
               ospreyPoints.definitionExpression = `timestamp <= Timestamp '${date}'`;
@@ -178,34 +161,33 @@
                 },
                 excludedEffect: "grayscale(20%) opacity(50%)"
               };
+              // <-- EVENTUALLY REMOVE
 
-              // // Try to update map extent based on date
-              console.log("Current Time Extent:", timeSlider.timeExtent);
-              const targetDate = new Date("2016-09-01T00:00:00Z")
+              // Get dates and bookmarks from the bookmark dictionary
+              Object.keys(dateBookmarkMap).forEach((dateStr) => {
+                const date = new Date(dateStr);
+                const bookmarkName = dateBookmarkMap[dateStr];
 
-              // Check if the target date is within the current time extent
-              if (timeSlider.timeExtent.start <= targetDate && timeSlider.timeExtent.end >= targetDate) {
-                        console.log("Target date is within range! Changing extent...");
-
-                        // Define the new extent
-                        const newExtent = new Extent({
-                            xmin: -130,
-                            ymin: 20,
-                            xmax: -60,
-                            ymax: 55,
-                            spatialReference: { wkid: 4326 }
-                        });
-
-                        // Smoothly transition the view to the new extent
-                        arcgisMap.view.goTo(newExtent, { duration: 3000 });
-                    }
-              
-
+                // Check if the target date is within the current time extent
+                if (timeSlider.timeExtent.start <= date && timeSlider.timeExtent.end >= date) {
+                          // Find the bookmark by name
+                          const bookmarks = Array.from(bookmarksWidget.bookmarks);
+                          const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
+                          // If the bookmark exists, navigate to it
+                          if (targetBookmark) {
+                            arcgisMap.goTo(targetBookmark.viewpoint, { duration: 4000 });  // Navigates to the bookmark view
+                        } else {
+                            console.error(`Bookmark "${bookmarkName}" not found!`);
+                        }
+                      }   
+                }
+              )
             } catch (error) {
-              console.error(error);
+                console.error(error);
             }
           });
          }
+
       })());
     </script>
   </body>
