@@ -66,9 +66,9 @@
 
         // Define a the mapping between slides and time ranges
         const choreographyMapping = {
-          "#slide1": { start: "2016-08-15T00:00:00Z", end: "2016-10-06T00:00:00Z", bookmarkStart: "Ohio", bookmarkEnd: "Ohio" },
-          "#slide2": { start: "2016-10-06T00:00:00Z", end: "2016-10-20T00:00:00Z", bookmarkStart: "Cuba", bookmarkEnd: "Cuba" },
-          "#slide3": { start: "2016-10-20T00:00:00Z", end: "2016-11-21T00:00:00Z", bookmarkStart: "Maracaibo", bookmarkEnd: "Maracaibo" },
+          "#slide1": { start: "2016-08-15T00:00:00Z", end: "2016-10-06T00:00:00Z", bookmark: "Ohio" },
+          "#slide2": { start: "2016-10-06T00:00:00Z", end: "2016-10-20T00:00:00Z", bookmark: "Cuba" },
+          "#slide3": { start: "2016-10-20T00:00:00Z", end: "2016-11-21T00:00:00Z", bookmark: "Maracaibo" },
         }
 
 
@@ -126,16 +126,17 @@
               console.log(`Hash: ${hash}`);
               if (choreographyMapping[hash]) {
                 // Set the initial map extent by the bookmarkStart
-                bookmarkStart = choreographyMapping[hash].bookmarkStart;
+                bookmark = choreographyMapping[hash].bookmark;
                 const bookmarks = Array.from(bookmarksWidget.bookmarks);
-                const fromBookmark = bookmarks.find(b => b.name === bookmarkStart);
+                const targetBookmark = bookmarks.find(b => b.name === bookmark);
 
-                // // If the bookmark exists, navigate to it
-                // if (fromBookmark) {
-                //   arcgisMap.goTo(fromBookmark.viewpoint, { duration: 0 });  // Navigates to the bookmark view
-                // } else {
-                //   console.error(`Bookmark "${bookmarkStart}" not found!`);
-                // } 
+                // Find the bookmark by name
+                // If the bookmark exists, navigate to it
+                if (targetBookmark) {
+                  arcgisMap.goTo(targetBookmark.viewpoint, { duration: 6000 });  // Navigates to the bookmark view
+                } else {
+                  console.error(`Bookmark "${bookmark}" not found!`);
+                } 
 
                 // Configure the time sliders full extent with the start and end time from choreography
                 const startFrame = new Date(choreographyMapping[hash].start);
@@ -159,16 +160,6 @@
                 if (timeSlider.state === "ready") {
                   timeSlider.play();
                 }
-
-                // Find the bookmark by name
-                bookmarkEnd = choreographyMapping[hash].bookmarkEnd;
-                const toBookmark = bookmarks.find(b => b.name === bookmarkEnd);
-                // If the bookmark exists, navigate to it
-                if (toBookmark) {
-                  arcgisMap.goTo(toBookmark.viewpoint, { duration: 6000 });  // Navigates to the bookmark view
-                } else {
-                  console.error(`Bookmark "${bookmarkEnd}" not found!`);
-                } 
               }
           }
 
