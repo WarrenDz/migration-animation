@@ -72,24 +72,24 @@
         }
 
 
-        // Set a basic symbol on a layer to visualize all features the same way
-        const ospreyRenderer = {
-          type: "simple",
-          symbol: {
-            type: "simple-marker",
-            size: 10,
-            color: "black",
-            outline: {
-              width: 0.5,
-              color: "white"
-            }
-          }
-        };
+        // // Set a basic symbol on a layer to visualize all features the same way
+        // const ospreyRenderer = {
+        //   type: "simple",
+        //   symbol: {
+        //     type: "simple-marker",
+        //     size: 10,
+        //     color: "black",
+        //     outline: {
+        //       width: 0.5,
+        //       color: "white"
+        //     }
+        //   }
+        // };
 
-        // Load osprey points layer for visualization
+        // Define osprey points layer for visualization
         const ospreyPoints = new FeatureLayer({
           url: "https://services.arcgis.com/nzS0F0zdNLvs7nc8/arcgis/rest/services/Migration_Routes/FeatureServer/2",
-          renderer: ospreyRenderer,
+          // renderer: ospreyRenderer,
           timeInfo: {
             startField: "timestamp", // name of the date field
             interval: {
@@ -97,7 +97,48 @@
               value: 1
             },
             trackIdField: "individual_local_identifier"
-          }
+          },
+          // TURNS OUT IS SEEMS I DON'T NEED TO ACTUALLY DEFINE ALL THIS HERE?
+          // Define the track info for the layer
+          // This is used to visualize the migration routes
+          // trackInfo: {
+          //   enabled: true,
+          //   previousObservations: {
+          //     visible: true,
+          //     renderer: {
+          //       type: "simple",
+          //       symbol: {
+          //         type: "simple-marker",
+          //         style: "circle",
+          //         color: "red",
+          //         size: 10
+          //       }
+          //     }
+          //   },
+          //   latestObservations: {
+          //     visible: true,
+          //     renderer: {
+          //       type: "simple",
+          //       symbol: {
+          //         type: "simple-marker",
+          //         style: "circle",
+          //         color: "blue",
+          //         size: 5
+          //       }
+          //     }
+          //   },
+          //   trackLines: {
+          //     visible: true,
+          //     renderer: {
+          //       type: "simple",
+          //       symbol: {
+          //         type: "simple-line",
+          //         color: "blue",
+          //         width: 1
+          //       }
+          //     }
+          //   }
+          // }
         });
 
         // Wait for the map to load
@@ -115,8 +156,52 @@
         async function handleMapReady() {
           // Add the telemetry layer to the map
           arcgisMap.map.add(ospreyPoints);
+          // When the layer is ready for rendering, apply the track renderer
           const layerView = await arcgisMap.whenLayerView(ospreyPoints);
-
+          if (ospreyPoints.timeInfo) {
+            // Set the time extent of the layer view to the current time extent of the map
+            console.log("The layer is ready")
+            ospreyPoints.timeInfo.trackIdField = "individual_local_identifier";
+            ospreyPoints.trackInfo = {
+              enabled: true,
+              maxDisplayObservationsPerTrack: 0,
+              previousObservations: {
+                visible: true,
+                renderer: {
+                  type: "simple",
+                  symbol: {
+                    type: "simple-marker",
+                    style: "circle",
+                    color: "yellow",
+                    size: 3
+                  }
+                }
+              },
+              latestObservations: {
+                visible: true,
+                renderer: {
+                  type: "simple",
+                  symbol: {
+                    type: "simple-marker",
+                    style: "circle",
+                    color: "red",
+                    size: 8
+                  }
+                }
+              },
+              trackLines: {
+                visible: true,
+                renderer: {
+                  type: "simple",
+                  symbol: {
+                    type: "simple-line",
+                    color: "blue",
+                    width: 2
+                  }
+                }
+              }
+            }
+          }
           // Define the time slider component
           const timeSlider = document.querySelector("arcgis-time-slider");
 
@@ -169,39 +254,39 @@
           window.addEventListener("hashchange", updateChoreographyFromHash);
 
           // Add an event listener to the time slider to watch time extent changes
-          timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
-            try {
-              // EVENTUALLY REMOVE -->
-              // Only show points up until the end of timeSlider's current time extent.
-              const date = new Date(timeSlider.timeExtent.end).toISOString().replace("T", " ").replace("Z", "");
-              ospreyPoints.definitionExpression = `timestamp <= Timestamp '${date}'`;
+          // timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
+          //   try {
+          //     // // EVENTUALLY REMOVE -->
+          //     // // Only show points up until the end of timeSlider's current time extent.
+          //     // const date = new Date(timeSlider.timeExtent.end).toISOString().replace("T", " ").replace("Z", "");
+          //     // ospreyPoints.definitionExpression = `timestamp <= Timestamp '${date}'`;
 
-              // Gray out points that happened before the time slider's current timeExtent
-              layerView.featureEffect = {
-                filter: {
-                  timeExtent: timeSlider.timeExtent,
-                  geometry: arcgisMap.extent
-                },
-                excludedEffect: "grayscale(20%) opacity(50%)"
-              };
-              // <-- EVENTUALLY REMOVE
+          //     // // Gray out points that happened before the time slider's current timeExtent
+          //     // layerView.featureEffect = {
+          //     //   filter: {
+          //     //     timeExtent: timeSlider.timeExtent,
+          //     //     geometry: arcgisMap.extent
+          //     //   },
+          //     //   excludedEffect: "grayscale(20%) opacity(50%)"
+          //     // };
+          //     // // <-- EVENTUALLY REMOVE
 
-                // Check if the target date is within the current time extent
-              if (timeSlider.timeExtent.start <= date && timeSlider.timeExtent.end >= date) {
-                        // Find the bookmark by name
-                        const bookmarks = Array.from(bookmarksWidget.bookmarks);
-                        const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
-                        // If the bookmark exists, navigate to it
-                        if (targetBookmark) {
-                          arcgisMap.goTo(targetBookmark.viewpoint, { duration: 3000 });  // Navigates to the bookmark view
-                      } else {
-                          console.error(`Bookmark "${bookmarkName}" not found!`);
-                      }
-                    }
-            } catch (error) {
-                console.error(error);
-            }
-          });
+          //       // Check if the target date is within the current time extent
+          //     if (timeSlider.timeExtent.start <= date && timeSlider.timeExtent.end >= date) {
+          //               // Find the bookmark by name
+          //               const bookmarks = Array.from(bookmarksWidget.bookmarks);
+          //               const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
+          //               // If the bookmark exists, navigate to it
+          //               if (targetBookmark) {
+          //                 arcgisMap.goTo(targetBookmark.viewpoint, { duration: 3000 });  // Navigates to the bookmark view
+          //             } else {
+          //                 console.error(`Bookmark "${bookmarkName}" not found!`);
+          //             }
+          //           }
+          //   } catch (error) {
+          //       console.error(error);
+          //   }
+          // });
          }
 
       })());
