@@ -3,14 +3,6 @@ const mapElement = document.querySelector("arcgis-map");
 const bookmarksElement = document.querySelector("arcgis-bookmarks");
 const timeSlider = document.querySelector("arcgis-time-slider");
 
-
-// Example list of event IDs to filter
-const eventIds = ['1897671422', '1897671322', '1897671522']; // Add your event IDs here
-
-// Construct the 'where' clause dynamically
-const whereClause = `event_id IN (${eventIds.map(id => `'${id}'`).join(",")})`;
-console.log(whereClause)
-
 // Define a the mapping between slides and time ranges
 const choreographyMapping = {
     "#slide1": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: ['1712299077','1897671422'], layersOn: [], layersOff: ['Art'], start: "2016-08-15T00:00:00Z", end: "2016-10-06T00:00:00Z", bookmark: "Ohio" },
