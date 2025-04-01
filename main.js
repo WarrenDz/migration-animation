@@ -98,7 +98,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
                     },
                     labelPlacement: "above-right",
                     labelExpressionInfo: {
-                      expression: "$feature." + trackStartField // Substitute the time field into the label
+                      expression: "Text($feature." + trackStartField + ", 'dddd, MMMM D, Y')" // Substitute the time field into the label
                     },
                     where: whereClause // Use the dynamically constructed 'where' clause
                   }
