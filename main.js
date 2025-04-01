@@ -15,6 +15,13 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
   if (event.target.ready) {
     // Access the MapView from the arcgis-map component
     const view = mapElement.view;
+    // Disable map navigation
+    view.on("mouse-wheel", (event) => {
+      event.stopPropagation();
+    });
+    view.on("drag", (event) => {
+      event.stopPropagation();
+    });
     // Access the WebMap instance from the view
     const map = view.map;
 
