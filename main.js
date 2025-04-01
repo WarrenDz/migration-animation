@@ -196,6 +196,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
     }
     //updateChoreographyFromHash();
     updateMapChoreography()
-
+    // Listen for hash changes to update the choreography
+    window.addEventListener("hashchange", updateMapChoreography);
   }
 });
