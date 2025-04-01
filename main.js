@@ -3,11 +3,19 @@ const mapElement = document.querySelector("arcgis-map");
 const bookmarksElement = document.querySelector("arcgis-bookmarks");
 const timeSlider = document.querySelector("arcgis-time-slider");
 
+
+// Example list of event IDs to filter
+const eventIds = ['1897671422', '1897671322', '1897671522']; // Add your event IDs here
+
+// Construct the 'where' clause dynamically
+const whereClause = `event_id IN (${eventIds.map(id => `'${id}'`).join(",")})`;
+console.log(whereClause)
+
 // Define a the mapping between slides and time ranges
 const choreographyMapping = {
-    "#slide1": { trackLayer: "Osprey Points", layersOn: [], layersOff: ['Art'], start: "2016-08-15T00:00:00Z", end: "2016-10-06T00:00:00Z", bookmark: "Ohio" },
-    "#slide2": { trackLayer: "Osprey Points", layersOn: [], layersOff: [], start: "2016-10-06T00:00:00Z", end: "2016-10-20T00:00:00Z", bookmark: "Cuba" },
-    "#slide3": { trackLayer: "Osprey Points", layersOn: [], layersOff: [], start: "2016-10-20T00:00:00Z", end: "2016-11-21T00:00:00Z", bookmark: "Maracaibo" },
+    "#slide1": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: ['1712299077','1897671422'], layersOn: [], layersOff: ['Art'], start: "2016-08-15T00:00:00Z", end: "2016-10-06T00:00:00Z", bookmark: "Ohio" },
+    "#slide2": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: [], layersOn: [], layersOff: [], start: "2016-10-06T00:00:00Z", end: "2016-10-20T00:00:00Z", bookmark: "Cuba" },
+    "#slide3": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: [], layersOn: [], layersOff: [], start: "2016-10-20T00:00:00Z", end: "2016-11-21T00:00:00Z", bookmark: "Maracaibo" },
 }
 // Wait for a change in readiness from the map element
 mapElement.addEventListener("arcgisViewReadyChange", (event) => {
@@ -21,8 +29,12 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
     // MASTER MAP CHOREOGRAPHY FUNCTION
     function updateMapChoreography() {
       // Get the current hash of the browser window
+      // Pull map choreography info
       const hash = window.location.hash;
       const hashTrackLayer = choreographyMapping[hash].trackLayer
+      const hashTrackField = choreographyMapping[hash].trackField
+      const hashTrackLabelField = choreographyMapping[hash].trackLabelField
+      const hashTrackLabelIds = choreographyMapping[hash].trackLabelIds
       const hashBookmark = choreographyMapping[hash].bookmark
       const hashLayersOn = choreographyMapping[hash].layersOn
       const hashLayersOff = choreographyMapping[hash].layersOff
@@ -45,13 +57,18 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
             trackLayer.visible = true; // Make the layer visible
             // Apply the track renderer to the layer
             trackLayer.timeInfo = {
-              startField: trackStartField,
-              trackIdField: "tag_local_identifier",
+              startField: trackStartField, // dynamically set the time field used by the trackLayer
+              trackIdField: hashTrackField, // dynamically set the track field used by the trackLayer
               interval: {
                 unit: "hours", // set time interval to one hour
                 value: 1
               }
             };
+            // Set the label ids and expression
+            // Construct the 'where' clause dynamically
+            const whereClause = hashTrackLabelField + ` IN (${hashTrackLabelIds.map(id => `'${id}'`).join(",")})`;
+            console.log("label filter:", whereClause)
+            // Update the trackInfo for the layer
             trackLayer.trackInfo = {
               enabled: true,
               timeField: "startTimeField",
@@ -70,6 +87,22 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
               previousObservations: {
                 enabled: true,
                 visible: true,
+                labelsVisible: true,
+                labelingInfo: [
+                  {
+                    symbol: {
+                      type: "text",
+                      color: "white",
+                      haloColor: "black",
+                      haloSize: 2
+                    },
+                    labelPlacement: "above-right",
+                    labelExpressionInfo: {
+                      expression: "$feature." + trackStartField // Substitute the time field into the label
+                    },
+                    where: whereClause // Use the dynamically constructed 'where' clause
+                  }
+                ],
                 renderer: {
                   type: "simple",
                   symbol: {
