@@ -14,16 +14,14 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
   if (event.target.ready) {
     const view = mapElement.view; // Access the MapView from the arcgis-map component
     // Disable map navigation
-    view.navigation = {
-      drag: false, // Disable panning
-      keyboard: false, // Disable keyboard navigation
-      mouseWheelZoom: false, // Disable zooming with the mouse wheel
-      doubleClickZoom: false, // Disable zooming with double-click
-      pinchZoom: false, // Disable pinch-to-zoom on touch devices
-    };
+    view.on("mouse-wheel", (event) => {
+      event.stopPropagation();
+    });
+    view.on("drag", (event) => {
+      event.stopPropagation();
+    });
     const map = view.map; // Access the WebMap instance from the view
     
-
     // Access the layers in the map
     const layers = map.layers;
 
