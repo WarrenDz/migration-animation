@@ -5,9 +5,9 @@ const timeSlider = document.querySelector("arcgis-time-slider");
 
 // Define a the mapping between slides and time ranges
 const choreographyMapping = {
-    "#slide1": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: ['1712299077','1897671422'], layersOn: [], layersOff: ['Art'], start: "2016-08-15T00:00:00Z", end: "2016-10-06T00:00:00Z", bookmark: "Ohio" },
-    "#slide2": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: [], layersOn: [], layersOff: [], start: "2016-10-06T00:00:00Z", end: "2016-10-20T00:00:00Z", bookmark: "Cuba" },
-    "#slide3": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: [], layersOn: [], layersOff: [], start: "2016-10-20T00:00:00Z", end: "2016-11-21T00:00:00Z", bookmark: "Maracaibo" },
+    "#slide1": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: ['1712299077','1990601353'], layersOn: [], layersOff: [], start: "2016-08-15T00:00:00Z", end: "2016-10-06T00:00:00Z", bookmark: "Ohio" },
+    "#slide2": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: ['1992557794','2012515057'], layersOn: [], layersOff: [], start: "2016-10-06T00:00:00Z", end: "2016-10-20T00:00:00Z", bookmark: "Cuba" },
+    "#slide3": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: ['2013411694', '2098442143'], layersOn: [], layersOff: [], start: "2016-10-20T00:00:00Z", end: "2016-11-21T00:00:00Z", bookmark: "Maracaibo" },
 }
 // Wait for a change in readiness from the map element
 mapElement.addEventListener("arcgisViewReadyChange", (event) => {
@@ -86,7 +86,11 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
                       type: "text",
                       color: "white",
                       haloColor: "black",
-                      haloSize: 2
+                      haloSize: 1.5,
+                      font: {
+                        family: "Oswald",
+                        size: 12
+                      }
                     },
                     labelPlacement: "above-right",
                     labelExpressionInfo: {
