@@ -1,9 +1,3 @@
-import FeatureLayer from "https://js.arcgis.com/4.32/@arcgis/core/layers/FeatureLayer.js";
-import Map from "https://js.arcgis.com/4.32/@arcgis/core/Map.js";
-import MapView from "https://js.arcgis.com/4.32/@arcgis/core/views/MapView.js";
-import VectorTileLayer from "https://js.arcgis.com/4.32/@arcgis/core/layers/VectorTileLayer.js";
-import WebMap from "https://js.arcgis.com/4.32/@arcgis/core/WebMap.js";
-
 // Define the map and bookmarks components
 const mapElement = document.querySelector("arcgis-map");
 const bookmarksElement = document.querySelector("arcgis-bookmarks");
@@ -25,60 +19,62 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
 
     // Find a specific layer by title or id
     const targetLayer = layers.find((layer) => layer.title === "Osprey Points"); // Replace with your layer's title
-
     if (targetLayer) {
       console.log("Layer found");
-      targetLayer.visible = true;
-      targetLayer.timeInfo = {
-        startField: "timestamp",
-        trackIdField: "tag_local_identifier"
-      };
-      targetLayer.trackInfo = {
-        enabled: true,
-        timeField: "startTimeField",
-        latestObservations: {
-          visible: true,
-          renderer: {
-            type: "simple",
-            symbol: {
-              type: "simple-marker",
-              style: "circle",
-              color: "red",
-              size: 10
-            }
-          }
-        },
-        previousObservations: {
-          enabled: false,
-          visible: false,
-          renderer: {
-            type: "simple",
-            symbol: {
-              type: "simple-marker",
-              style: "circle",
-              color: "white",
-              size: 2
-            }
-          }
-        },
-        trackLines: {
-          visible: true,
+      // Wait for the layer to load before modifying its properties
+      targetLayer.when(() => {
+        targetLayer.visible = true; // Make the layer visible
+        console.log(targetLayer.title, "is now visible.");
+        targetLayer.timeInfo = {
+          startField: "startTimeField",
+          trackIdField: "tag_local_identifier"
+        };
+        targetLayer.trackInfo = {
           enabled: true,
-          renderer: {
-            type: "simple",
-            symbol: {
-              type: "simple-line",
-              color: "black",
-              width: 6
+          timeField: "startTimeField",
+          latestObservations: {
+            visible: true,
+            renderer: {
+              type: "simple",
+              symbol: {
+                type: "simple-marker",
+                style: "circle",
+                color: "red",
+                size: 10
+              }
+            }
+          },
+          previousObservations: {
+            enabled: false,
+            visible: false,
+            renderer: {
+              type: "simple",
+              symbol: {
+                type: "simple-marker",
+                style: "circle",
+                color: "white",
+                size: 2
+              }
+            }
+          },
+          trackLines: {
+            visible: true,
+            enabled: true,
+            renderer: {
+              type: "simple",
+              symbol: {
+                type: "simple-line",
+                color: "black",
+                width: 6
+              }
             }
           }
         }
-      };
-      
+      }).catch((error) => {
+        console.error("Error loading the layer:", error);
+      });
     } else {
-      console.error("Layer not found.");
+      console.log("Layer not found.");
     }
   }
 });
-
-
