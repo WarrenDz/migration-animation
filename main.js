@@ -99,7 +99,6 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
 
       // Function to toggle the visibility of layers OFF based on a list of layer names
       function toggleLayerVisibility(layersOff, layersOn, layers) {
-        //const layers = map.layers; // Access the layers in the map
 
         // Iterate through the layers and toggle visibility OFF for matching titles
         layers.forEach((layer) => {
@@ -108,24 +107,60 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
             console.log(`Toggled layer "${layer.title}" visibility set to OFF.`);
           }
         });
-
         // Iterate through the layers and toggle visibility ON for matching titles
         layers.forEach((layer) => {
           if (layersOn.includes(layer.title)) {
-            layer.visible = true; // Set visibility to false
+            layer.visible = true; // Set visibility to true
             console.log(`Toggled layer "${layer.title}" visibility set to OFF.`);
           }
         });
       }
 
+      // Function to update the map bookmark
+      function updateMapBookmark() {
+        console.log(`Hash: ${hash}`);
+        if (choreographyMapping[hash]) {
+          // Set the initial map extent by the bookmarkStart
+          const bookmarks = Array.from(bookmarksElement.bookmarks);
+          const targetBookmark = bookmarks.find(b => b.name === hashBookmark);
+          // Find the bookmark by name
+          // If the bookmark exists, navigate to it
+          if (targetBookmark) {
+            mapElement.goTo(targetBookmark.viewpoint, { duration: 6000 });  // Navigates to the bookmark view
+          } else {
+            console.error(`Bookmark "${bookmark}" not found!`);
+          } 
+        }
+      }
 
-      applyTrackRender()
-      toggleLayersVisibility(hashLayersOff, hashLayersOn, layers)
-
+      // Function to define and start the timeSlider component of the animation
+      function updateTimeSlider() {
+          // Configure the time sliders full extent with the start and end time from choreographyMapping
+          const startFrame = new Date(choreographyMapping[hash].start);
+          const endFrame = new Date(choreographyMapping[hash].end);
+          timeSlider.fullTimeExtent = {start: startFrame, end: endFrame};
+          // Set the timeSlider stops
+          timeSlider.stops = {
+            interval: {
+              value: 1,
+              unit: "hours"
+            }
+          };
+          
+          // Start a TimeSlider animation if not already playing
+          if (timeSlider.state === "ready") {
+            timeSlider.play();
+          }
+      }
+      // Call functions
+      applyTrackRender() // apply the track renderer to the desired tracklayer as defined in choreographyMapping
+      toggleLayerVisibility(hashLayersOff, hashLayersOn, layers) // toggle supporting layers on/off as defined in choreographyMapping
+      updateTimeSlider() // update the timeSlider element based on the start/end times and autoplay as defined in choreographyMapping
+      updateMapBookmark() // update the map bookmark as defined in the choreographyMapping
     }
     
-    // Access the layers in the map
-    const layers = map.layers;
+    // // Access the layers in the map
+   const layers = map.layers;
 
     // Find a specific layer by title or id
     const targetLayer = layers.find((layer) => layer.title === "Osprey Points"); // Replace with your layer's title
