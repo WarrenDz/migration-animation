@@ -19,5 +19,6 @@ This is a list of the functionality that needs to be incorporated into the app o
 - [x] **Implement the pan/zoom to bookmarks on time slider 'steps'** (ex. On step or at time X of time slider -> pan/zoom to bookmark Y...)
 - [x] **Embed the map into an ArcGIS StoryMaps sidecar sequence** (Can this be done using the url/#s? so that if the time-enabled layer spans 2010 -> 2020 we can configure the app to show 2010 -> 2013 in sidecar 1, 2013 -> 2017 in sidecar 2, and so on...)
 - [ ] **Implement choreography that can turn layers on/off as required and re-assign track layer**
+- [ ] **Autoplay the timeslider during map animation during bookmark nav**
 - [ ] **How can we work around the embed on mobile devices?**
 - [ ] **Get the whole thing code reviewed by someone who knows what they're doing**
