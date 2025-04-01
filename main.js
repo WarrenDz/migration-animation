@@ -38,13 +38,13 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
       function applyTrackRender() {
         if (trackLayer) {
           console.log("Found track layer named:", hashTrackLayer)
-          console.log("Found track layer has time field:", trackLayer.timeInfo.startField)
-          const trackStartField = trackLayer.timeInfo.startField
           // Wait for the layer to load before modifying its properties
           trackLayer.when(() => {
+            console.log("Found track layer has time field:", trackLayer.timeInfo.startField)
+            const trackStartField = trackLayer.timeInfo.startField
             trackLayer.visible = true; // Make the layer visible
             // Apply the track renderer to the layer
-            targetLayer.timeInfo = {
+            trackLayer.timeInfo = {
               startField: trackStartField,
               trackIdField: "tag_local_identifier",
               interval: {
@@ -52,7 +52,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
                 value: 1
               }
             };
-            targetLayer.trackInfo = {
+            trackLayer.trackInfo = {
               enabled: true,
               timeField: "startTimeField",
               latestObservations: {
@@ -158,121 +158,8 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
       updateTimeSlider() // update the timeSlider element based on the start/end times and autoplay as defined in choreographyMapping
       updateMapBookmark() // update the map bookmark as defined in the choreographyMapping
     }
-    
-    // // Access the layers in the map
-   const layers = map.layers;
-
-    // Find a specific layer by title or id
-    const targetLayer = layers.find((layer) => layer.title === "Osprey Points"); // Replace with your layer's title
-    if (targetLayer) {
-      console.log("Layer found");
-      // Wait for the layer to load before modifying its properties
-      targetLayer.when(() => {
-        targetLayer.visible = true; // Make the layer visible
-        console.log(targetLayer.title, "is now visible.");
-        // Apply the track renderer
-        targetLayer.timeInfo = {
-          startField: "timestamp",
-          trackIdField: "tag_local_identifier",
-          interval: {
-            unit: "hours", // set time interval to one hour
-            value: 1
-          }
-        };
-        targetLayer.trackInfo = {
-          enabled: true,
-          timeField: "startTimeField",
-          latestObservations: {
-            visible: true,
-            renderer: {
-              type: "simple",
-              symbol: {
-                type: "simple-marker",
-                style: "circle",
-                color: "White",
-                size: 10
-              }
-            }
-          },
-          previousObservations: {
-            enabled: true,
-            visible: true,
-            renderer: {
-              type: "simple",
-              symbol: {
-                type: "simple-marker",
-                style: "circle",
-                color: "white",
-                size: 3
-              }
-            }
-          },
-          trackLines: {
-            visible: true,
-            enabled: true,
-            renderer: {
-              type: "simple",
-              symbol: {
-                type: "simple-line",
-                color: "black",
-                width: 4
-              }
-            }
-          }
-        }
-      // 
-      // Define the time slider component
-      
-      // Define function to update the choreography based on the hash
-      function updateChoreographyFromHash() {
-        const hash = window.location.hash;
-        console.log(`Hash: ${hash}`);
-        if (choreographyMapping[hash]) {
-          // Set the initial map extent by the bookmarkStart
-          const bookmark = choreographyMapping[hash].bookmark;
-          const bookmarks = Array.from(bookmarksElement.bookmarks);
-          const targetBookmark = bookmarks.find(b => b.name === bookmark);
-
-          // Configure the time sliders full extent with the start and end time from choreography
-          const startFrame = new Date(choreographyMapping[hash].start);
-          const endFrame = new Date(choreographyMapping[hash].end);
-          timeSlider.fullTimeExtent = {start: startFrame, end: endFrame};
-
-          // Set the time slider's stops to 1 day intervals
-          timeSlider.stops = {
-            interval: {
-              value: 1,
-              unit: "hours"
-            }
-          };
-          
-          // Start a TimeSlider animation if not already playing
-          if (timeSlider.state === "ready") {
-            timeSlider.play();
-          }
-
-          // Find the bookmark by name
-          // If the bookmark exists, navigate to it
-          if (targetBookmark) {
-            mapElement.goTo(targetBookmark.viewpoint, { duration: 6000 });  // Navigates to the bookmark view
-          } else {
-            console.error(`Bookmark "${bookmark}" not found!`);
-          } 
-        }
-    }
     //updateChoreographyFromHash();
     updateMapChoreography()
 
-    // Listen for hash changes to update the choreography
-    window.addEventListener("hashchange", updateMapChoreography);
-
-
-
-    }).catch((error) => {
-      console.error("Error loading the layer:", error);
-    });
-    } else {
-      console.log("Layer not found.");
-    }
   }
 });
