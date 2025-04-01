@@ -1,210 +1,52 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <title>Migration Animation</title>
+<head>
+  <meta charset="UTF-8" />
+  <title>migration-animation</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.32/esri/themes/light/main.css" />
+  <script src="https://js.arcgis.com/4.32/"></script>
+  <!-- Load Calcite components from CDN -->
+  <script type="module" src="https://js.arcgis.com/calcite-components/3.0.3/calcite.esm.js"></script>
+  <!-- Load the ArcGIS Maps SDK for JavaScript from CDN -->
+  <link rel="stylesheet" href="https://js.arcgis.com/4.32/esri/themes/light/main.css" />
+  <!-- Load Map components from CDN-->
+  <script
+    type="module"
+    src="https://js.arcgis.com/map-components/4.32/arcgis-map-components.esm.js"
+  ></script>
+  <script type="module" src="./main.js"></script>
+  <style>
+    html,
+    body {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
 
-    <!-- Load Calcite components from CDN -->
-    <script type="module" src="https://js.arcgis.com/calcite-components/3.0.3/calcite.esm.js"></script>
+    arcgis-map {
+      height: 100%;
+      width: 100%;
+    }
 
-    <!-- Load the ArcGIS Maps SDK for JavaScript from CDN -->
-    <link rel="stylesheet" href="https://js.arcgis.com/4.32/esri/themes/light/main.css" />
-    <script src="https://js.arcgis.com/4.32/"></script>
-
-    <!-- Load Map components from CDN-->
-    <script
-      type="module"
-      src="https://js.arcgis.com/map-components/4.32/arcgis-map-components.esm.js"
-    ></script>
-
-    <style>
-      html,
-      body {
-        padding: 0;
-        margin: 0;
-        height: 100%;
-        width: 100%;
-      }
-
-      arcgis-map {
-        height: 100%;
-        width: 100%;
-      }
-
-      #container {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: 100%;
-      }
-
-      calcite-panel {
-        width:300px;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div id="container">
-      <arcgis-map item-id="7052c87d2d0742dbb9ed332122b9f2f6" zoom="3" center="-85.512764, 32.04355">
-        <arcgis-zoom position="top-left"></arcgis-zoom>
-        <arcgis-expand position="top-left" mode="floating">
-          <arcgis-bookmarks></arcgis-bookmarks>
-        </arcgis-expand>
-      </arcgis-map>
-      <!-- Define the time slider component -->
-      <arcgis-time-slider mode="time-window" play-rate="25"></arcgis-time-slider>
-    </div>
-    <script>
-      require([
-        "esri/Map","esri/layers/FeatureLayer", "esri/geometry/Extent", "esri/widgets/Bookmarks"], (Map, FeatureLayer, Extent, Bookmarks) => (async () => {
-        
-        // Define the map and bookmarks components
-        const arcgisMap = document.querySelector("arcgis-map");
-        const bookmarksWidget = document.querySelector("arcgis-bookmarks");
-
-        // Define a the mapping between slides and time ranges
-        const choreographyMapping = {
-          "#slide1": { start: "2016-08-15T00:00:00Z", end: "2016-10-06T00:00:00Z", bookmark: "Ohio" },
-          "#slide2": { start: "2016-10-06T00:00:00Z", end: "2016-10-20T00:00:00Z", bookmark: "Cuba" },
-          "#slide3": { start: "2016-10-20T00:00:00Z", end: "2016-11-21T00:00:00Z", bookmark: "Maracaibo" },
-        }
-
-
-        // Set a basic symbol on a layer to visualize all features the same way
-        const ospreyRenderer = {
-          type: "simple",
-          symbol: {
-            type: "simple-marker",
-            size: 10,
-            color: "black",
-            outline: {
-              width: 0.5,
-              color: "white"
-            }
-          }
-        };
-
-        // Load osprey points layer for visualization
-        const ospreyPoints = new FeatureLayer({
-          url: "https://services.arcgis.com/nzS0F0zdNLvs7nc8/arcgis/rest/services/Migration_Routes/FeatureServer/2",
-          renderer: ospreyRenderer,
-          timeInfo: {
-            startField: "timestamp", // name of the date field
-            interval: {
-              unit: "hours", // set time interval to one day
-              value: 1
-            },
-            trackIdField: "individual_local_identifier"
-          }
-        });
-
-        // Wait for the map to load
-        if (!arcgisMap.ready) {
-          // Listen for when the readiness of the map changes
-          // and call the handleMapReady function
-          arcgisMap.addEventListener("arcgisViewReadyChange", handleMapReady, {
-            once: true
-          });
-        } else {
-          handleMapReady();
-        }
-
-        // Do these things once the map is ready
-        async function handleMapReady() {
-          // Add the telemetry layer to the map
-          arcgisMap.map.add(ospreyPoints);
-          const layerView = await arcgisMap.whenLayerView(ospreyPoints);
-
-          // Define the time slider component
-          const timeSlider = document.querySelector("arcgis-time-slider");
-
-          // Define function to update the choreography based on the hash
-          function updateChoreographyFromHash() {
-              const hash = window.location.hash;
-              console.log(`Hash: ${hash}`);
-              if (choreographyMapping[hash]) {
-                // Set the initial map extent by the bookmarkStart
-                bookmark = choreographyMapping[hash].bookmark;
-                const bookmarks = Array.from(bookmarksWidget.bookmarks);
-                const targetBookmark = bookmarks.find(b => b.name === bookmark);
-
-                // Find the bookmark by name
-                // If the bookmark exists, navigate to it
-                if (targetBookmark) {
-                  arcgisMap.goTo(targetBookmark.viewpoint, { duration: 6000 });  // Navigates to the bookmark view
-                } else {
-                  console.error(`Bookmark "${bookmark}" not found!`);
-                } 
-
-                // Configure the time sliders full extent with the start and end time from choreography
-                const startFrame = new Date(choreographyMapping[hash].start);
-                const endFrame = new Date(choreographyMapping[hash].end);
-                timeSlider.fullTimeExtent = {start: startFrame, end: endFrame};
-
-                // Set the time slider's stops to 1 day intervals
-                timeSlider.stops = {
-                  interval: {
-                    value: 1,
-                    unit: "hours"
-                  }
-                };
-
-                // Set the time slider initial time extent
-                let start = startFrame
-                let end = new Date(startFrame.getTime() + 24 * 60 * 60 * 1000);
-                timeSlider.timeExtent = { start, end };
-                
-                // Start a TimeSlider animation if not already playing
-                if (timeSlider.state === "ready") {
-                  timeSlider.play();
-                }
-              }
-          }
-
-          updateChoreographyFromHash();
-
-          // Listen for hash changes to update the choreography
-          window.addEventListener("hashchange", updateChoreographyFromHash);
-
-          // Add an event listener to the time slider to watch time extent changes
-          timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
-            try {
-              // EVENTUALLY REMOVE -->
-              // Only show points up until the end of timeSlider's current time extent.
-              const date = new Date(timeSlider.timeExtent.end).toISOString().replace("T", " ").replace("Z", "");
-              ospreyPoints.definitionExpression = `timestamp <= Timestamp '${date}'`;
-
-              // Gray out points that happened before the time slider's current timeExtent
-              layerView.featureEffect = {
-                filter: {
-                  timeExtent: timeSlider.timeExtent,
-                  geometry: arcgisMap.extent
-                },
-                excludedEffect: "grayscale(20%) opacity(50%)"
-              };
-              // <-- EVENTUALLY REMOVE
-
-                // Check if the target date is within the current time extent
-              if (timeSlider.timeExtent.start <= date && timeSlider.timeExtent.end >= date) {
-                        // Find the bookmark by name
-                        const bookmarks = Array.from(bookmarksWidget.bookmarks);
-                        const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
-                        // If the bookmark exists, navigate to it
-                        if (targetBookmark) {
-                          arcgisMap.goTo(targetBookmark.viewpoint, { duration: 3000 });  // Navigates to the bookmark view
-                      } else {
-                          console.error(`Bookmark "${bookmarkName}" not found!`);
-                      }
-                    }
-            } catch (error) {
-                console.error(error);
-            }
-          });
-         }
-
-      })());
-    </script>
-  </body>
+    #container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <arcgis-map item-id="7052c87d2d0742dbb9ed332122b9f2f6" zoom="3" center="-85.512764, 32.04355">
+      <arcgis-zoom position="top-left" reference-element="arcgis-map"></arcgis-zoom>
+      <arcgis-expand position="top-left" mode="floating">
+        <arcgis-bookmarks reference-element="arcgis-map"></arcgis-bookmarks>
+        <arcgis-time-slider mode="cumulative-from-start" play-rate="25" reference-element="arcgis-map"></arcgis-time-slider>
+      </arcgis-expand>
+    </arcgis-map>
+    <!-- Define the time slider component -->
+  </div>
+</body>
 </html>
