@@ -69,15 +69,17 @@ Each of these named hashes contains a number of **key-value** pairs describing w
 > [!NOTE]
 > The label expression and formatting should be defined in the webmap. This field is strictly used to selectively highlight points within the current slide.
 
+`bookmark`: Defines the bookmark (map extent) that the map will be focused on during the slide. These are referenced by their name as saved within the webmap.
+
 `layersOn`: Defines the layers that should be toggled **ON** for this specific slide. These layers are referenced by their names as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
 
 `layersOff`: Defines the layers that should be toggled **OFF** for this specific slide. These layers are referenced by their names as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
 
-`start`: Defines the timepoint at which the time slider should **START** for the given slide.
+`start`: Defines the timepoint at which the time slider should **START** for the slide.
 
-`end`: Defines the timepoint at which the time slider should **END** for the given slide.
+`end`: Defines the timepoint at which the time slider should **END** for the slide.
 
-`bookmark`: Defines the bookmark (map extent) that the map will be focused on during the given slide. These are referenced by their name as saved within the webmap.
+`playRate`: Define the speed of the time slider when playing the slide. This is set in time (in milliseconds) between animation steps.
 
 ---
 ## License
