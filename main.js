@@ -5,8 +5,8 @@ const timeSlider = document.querySelector("arcgis-time-slider");
 
 // Define a the mapping between slides and time ranges
 const choreographyMapping = {
-  "#slide1": { trackLayer: "Deer Points", trackField: "mig", trackLabelField: "event_id_str", trackLabelIds: ["1", "732"], bookmark: "Deer", layersOn: ["Deer Points", "Deer Labels", "Deer Sketch", "Transportation", "NPS Boundary", "USA Bureau of Land Management Lands"], layersOff: ["Global Ship Density"], start: "2016-03-20T00:00:00Z", end: "2016-06-18T00:00:00Z", playRate: 12 },
-  "#slide2": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: ["1828224806","1935895822", "1999613313", "2008282395", "2012515059", "2017197455"], bookmark: "Osprey", layersOn: ["Osprey Points", "Osprey Labels", "Osprey SKetch"], layersOff: ["Deer Points", "Deer Labels", "Deer Sketch", "Global Ship Density", "Transportation", "NPS Boundary", "USA Bureau of Land Management Lands"], start: "2016-08-15T00:00:00Z", end: "2016-11-21T00:00:00Z", playRate: 10 },
+  "#slide1": { trackLayer: "Deer Points", trackField: "mig", trackLabelField: "event_id_str", trackLabelIds: ["1", "732"], bookmark: "Deer", layersOn: ["Deer Points", "Deer Labels", "Deer Sketch", "Transportation", "NPS Boundary", "USA Bureau of Land Management Lands"], layersOff: ["Global Ship Density"], start: "2016-03-20T00:00:00Z", end: "2016-06-18T00:00:00Z", playRate: 10 },
+  "#slide2": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: ["1828224806","1935895822", "1999613313", "2008282395", "2012515059", "2017197455"], bookmark: "Osprey", layersOn: ["Osprey Points", "Osprey Labels", "Osprey SKetch"], layersOff: ["Deer Points", "Deer Labels", "Deer Sketch", "Global Ship Density", "Transportation", "NPS Boundary", "USA Bureau of Land Management Lands"], start: "2016-08-15T00:00:00Z", end: "2016-11-21T00:00:00Z", playRate: 5 },
   "#slide3": { trackLayer: "Whale Points", trackField: "id", trackLabelField: "event_id", trackLabelIds: ["825", "1109"], bookmark: "Whale", layersOn: ["Whale Points", "Whale Labels", "Whale Sketch", "Global Ship Density"], layersOff: ["Transportation", "NPS Boundary", "USA Bureau of Land Management Lands"], start: "2019-03-14T00:00:00Z", end: "2019-03-28T00:00:00Z", playRate: 100 }
 }
 // Wait for a change in readiness from the map element
@@ -147,7 +147,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
         layers.forEach((layer) => {
           if (layersOn.includes(layer.title)) {
             layer.visible = true; // Set visibility to true
-            console.log(`Toggled layer "${layer.title}" visibility set to OFF.`);
+            console.log(`Toggled layer "${layer.title}" visibility set to ON.`);
           }
         });
       }
