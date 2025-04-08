@@ -27,7 +27,7 @@ The `main.js` file contains the core logic for the application. It handles map i
 #### Key Features:
 - **Map Initialization**: Listens for the `arcgisViewReadyChange` event to ensure the map is fully loaded before interacting with it.
 - **Track Renderer**: Implements the [track renderer](https://developers.arcgis.com/javascript/latest/release-notes/#track-rendering-beta) to visualize time-enabled data with features like latest observations and track lines.
-- **Layer Visibility Management**: Dynamically toggles layer visibility based on the current hash/slide in the story.
+- **Layer Visibility Management**: Dynamically toggles layer visibility based on the current hash/slide in the story. Additionally, provide functionality for selectively toggling layer visibility based on current value of the time slider.
 - **Bookmark Navigation**: Pans and zooms the map to bookmarks defined in the webmap based on the current has/slide in the story.
 
 ## Getting Started
@@ -74,6 +74,8 @@ Each of these named hashes contains a number of **key-value** pairs describing w
 `layersOn`: Defines the layers that should be toggled **ON** for this specific slide. These layers are referenced by their names as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
 
 `layersOff`: Defines the layers that should be toggled **OFF** for this specific slide. These layers are referenced by their names as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
+
+`timeSyncedLayers`: Defines key-value pairs of layer names and dates. These will be used to selectively toggle the visibility of layers, or group layers, within the webmap based on the current value of the time slider. This allows for choreographing map annotations.
 
 `start`: Defines the timepoint at which the time slider should **START** for the slide.
 

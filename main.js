@@ -5,9 +5,9 @@ const timeSlider = document.querySelector("arcgis-time-slider");
 
 // Define a the mapping between slides and time ranges
 const choreographyMapping = {
-  "#slide1": { trackLayer: "Deer Points", trackField: "mig", trackLabelField: "event_id_str", trackLabelIds: ["1", "732"], bookmark: "Deer", layersOn: ["Deer Labels", "Deer Sketch", "Transportation", "NPS Boundary", "USA Bureau of Land Management Lands"], layersOff: ["Whale Points", "Whale Labels", "Whale Sketch", "Global Ship Density", "Osprey Labels", "Osprey Sketch", "Osprey Points"], start: "2016-03-20T00:00:00Z", end: "2016-06-18T00:00:00Z", playRate: 10, timeSynced: [{ layer: "DEER TIME SYNCED", visibleFrom: "2016-05-20T00:00:00Z" }, { layer: "Osprey Sketch", visibleFrom: "2016-10-01T00:00:00Z" }]},
-  "#slide2": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: ["1828224806","1935895822", "1999613313", "2008282395", "2012515059", "2017197455"], bookmark: "Osprey", layersOn: ["Osprey Labels", "Osprey Sketch"], layersOff: ["Deer Points", "Deer Labels", "Deer Sketch", "Whale Points", "Whale Labels", "Whale Sketch", "Global Ship Density", "Transportation", "NPS Boundary", "USA Bureau of Land Management Lands"], start: "2016-08-15T00:00:00Z", end: "2016-11-21T00:00:00Z", playRate: 5 },
-  "#slide3": { trackLayer: "Whale Points", trackField: "id", trackLabelField: "event_id", trackLabelIds: ["825", "1109"], bookmark: "Whale", layersOn: ["Whale Labels", "Whale Sketch", "Global Ship Density"], layersOff: ["Transportation", "Deer Points", "Deer Labels", "Deer Sketch", "NPS Boundary", "USA Bureau of Land Management Lands"], start: "2019-03-14T00:00:00Z", end: "2019-03-28T00:00:00Z", playRate: 100 }
+  "#slide1": { trackLayer: "Deer Points", trackField: "mig", trackLabelField: "event_id_str", trackLabelIds: ["1", "732"], bookmark: "Deer", layersOn: ["Deer Supporting Layers"], layersOff: ["Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Osprey Labels", "Osprey Sketch", "Osprey Points"], timeSyncedLayers: [{ layer: "Deer Highway Annotation", visibleFrom: "2016-05-21T00:00:00Z" }], start: "2016-03-20T00:00:00Z", end: "2016-06-18T00:00:00Z", playRate: 10},
+  "#slide2": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: ["1828224806","1935895822", "1999613313", "2008282395", "2012515059", "2017197455"], bookmark: "Osprey", layersOn: ["Osprey Labels", "Osprey Sketch"], layersOff: ["Deer Points", "Deer Highway Annotation", "Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Deer Supporting Layers"], start: "2016-08-15T00:00:00Z", end: "2016-11-21T00:00:00Z", playRate: 5 },
+  "#slide3": { trackLayer: "Whale Points", trackField: "id", trackLabelField: "event_id", trackLabelIds: ["825", "1109"], bookmark: "Whale", layersOn: ["Global Ship Density"], layersOff: ["Deer Points", "Deer Highway Annotation", "Deer Supporting Layers"], timeSyncedLayers: [{ layer: "Whale Traffic Corridor", visibleFrom: "2019-03-16T00:00:00Z" }], start: "2019-03-14T00:00:00Z", end: "2019-03-28T00:00:00Z", playRate: 100 }
 }
 // Wait for a change in readiness from the map element
 mapElement.addEventListener("arcgisViewReadyChange", (event) => {
@@ -38,7 +38,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
       const hashBookmark = choreographyMapping[hash].bookmark
       const hashLayersOn = choreographyMapping[hash].layersOn
       const hashLayersOff = choreographyMapping[hash].layersOff
-      const hashTimeSynced = choreographyMapping[hash].timeSynced;
+      const hashTimeSynced = choreographyMapping[hash].timeSyncedLayers;
 
       // Access the layers within the map
       const layers = map.layers;
@@ -195,11 +195,13 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           };
 
           // Listen for time extent changes
-          timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
-            const currentTime = timeSlider.timeExtent.end;
-            // Update time-synced layers
-            updateTimeSyncedLayers(timeSynced, currentTime, layers);
-          });
+          if (timeSynced && timeSynced.length > 0) {
+            timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
+              const currentTime = timeSlider.timeExtent.end;
+              // Update time-synced layers
+              updateTimeSyncedLayers(timeSynced, currentTime, layers);
+            });
+          }
           
           // Start a TimeSlider animation if not already playing
           if (timeSlider.state === "ready") {
