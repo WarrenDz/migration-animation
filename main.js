@@ -51,6 +51,9 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
         if (trackLayer) {
           console.log("Found track layer named:", trackLayerName);
           await trackLayer.when(); // Wait for the layer to load
+          // Wait for the LayerView to be ready
+          const layerView = await view.whenLayerView(trackLayer);
+          console.log("LayerView is ready:", layerView);
           console.log("Found track layer has time field:", trackLayer.timeInfo.startField);
           const trackStartField = trackLayer.timeInfo.startField;
           trackLayer.visible = true; // Make the layer visible
