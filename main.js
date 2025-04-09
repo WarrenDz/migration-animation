@@ -37,11 +37,16 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
 
       // Configure the track layer
       // Find the name of the desired track layer in the map layers
-      const trackLayer = layers.find((layer) => layer.title === choreographyMapping[hash].trackLayer);
+      let trackLayer = layers.find((layer) => layer.title === choreographyMapping[hash].trackLayer);
 
       // If found configure the track renderer
       async function applyTrackRender(trackLayerName, trackLayerField, trackLabelField, trackLabelIds) {
         if (trackLayer) {
+          // these are an attempt to reset the renderer on the layer when we switch
+          map.remove(trackLayer);
+          trackLayer = trackLayer.clone();
+          map.add(trackLayer);
+          //
           console.log("Found track layer named:", trackLayerName);
           await trackLayer.when(); // Wait for the layer to load
           console.log("Found track layer has time field:", trackLayer.timeInfo.startField);
