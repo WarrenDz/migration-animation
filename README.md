@@ -78,8 +78,6 @@ Each of these named hashes contains a number of **key-value** pairs describing w
 
 `end` **[Required]**: Defines the timepoint at which the time slider should **END** for the slide.
 
-`playRate`: Define the speed of the time slider when playing the slide. This is set in time (in milliseconds) between animation steps.
-
 ---
 ## License
 This project is licensed under the [Apache 2.0](LICENSE).
