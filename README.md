@@ -27,7 +27,7 @@ The `main.js` file contains the core logic for the application. It handles map i
 #### Key Features:
 - **Map Initialization**: Listens for the `arcgisViewReadyChange` event to ensure the map is fully loaded before interacting with it.
 - **Track Renderer**: Implements the [track renderer](https://developers.arcgis.com/javascript/latest/release-notes/#track-rendering-beta) to visualize time-enabled data with features like latest observations and track lines.
-- **Layer Visibility Management**: Dynamically toggles layer visibility based on the current hash/slide in the story.
+- **Layer Visibility Management**: Dynamically toggles layer visibility based on the current hash/slide in the story. Additionally, provide functionality for selectively toggling layer visibility based on current value of the time slider.
 - **Bookmark Navigation**: Pans and zooms the map to bookmarks defined in the webmap based on the current has/slide in the story.
 
 ## Getting Started
@@ -48,8 +48,8 @@ The `main.js` file contains the core logic for the application. It handles map i
 3. Open the `main.js` file and inspect the `choreographyMapping`. Update the key-value pairs with the values relevant to the story you want to tell with your data. The specifics of each key-value pair and the effect they have is described in [detail below](#choreographymapping).
 ```js
 const choreographyMapping = {
-    "#slide1": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: ['1712299077','1990601351'], layersOn: [], layersOff: ['Global Ship Density'], start: "2016-08-15T00:00:00Z", end: "2016-10-06T00:00:00Z", bookmark: "Ohio" }
-  }
+  "#slide1": { trackLayer: "Deer Points", trackField: "mig", trackLabelField: "event_id_str", trackLabelIds: ["1", "732"], mapBookmark: "Deer", mapLayersOn: ["Deer Supporting Layers"], mapLayersOff: ["Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Osprey Labels", "Osprey Sketch", "Osprey Points"], mapTimeSyncedLayers: [{ layer: "Deer Highway Annotation", visibleFrom: "2016-05-21T00:00:00Z" }], timeSliderStart: "2016-03-20T00:00:00Z", timeSliderEnd: "2016-06-18T00:00:00Z", timeSliderUnit: "hours", timeSliderStep: 2, timePlayRate: 500}
+}
 ```
 4. Once published/hosted, the url can be embedded across a sequence of slides within a sidecar of an ArcGIS StoryMap using the hashes.
 
@@ -58,28 +58,25 @@ This **`choreographyMapping`** object contains a list of url hashes representing
 
 Each of these named hashes contains a number of **key-value** pairs describing what layer will be rendered with the track renderer, the bookmark of the map, and other aspects described below.
 
-`trackLayer`: Defines the layer that will be rendered with the track renderer. This layer is referenced by it's name as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
+`trackLayer` **[Required]**: Defines the layer that will be rendered with the track renderer. This layer is referenced by it's name as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
 
-`trackField`: Defines the field within the `trackLayer` that will be used to identify and group unique track values within the data. This will be provided to the track renderer `trackIdField`.
+`trackField` **[Required]**: Defines the field within the `trackLayer` that will be used to identify and group unique track values within the data. This will be provided to the track renderer `trackIdField`.
 
-`trackLabelField`: Defines the field in the `trackLayer` that will be used to label or annotate specific data points.
+`trackLabelField` **[Required]**: Defines the field in the `trackLayer` that will be used to label or annotate specific data points.
 
 `trackLabelIds`: Defines a list of values that appear within the `trackLabelField`. Only data points within the `trackLayer` that have these values in the `trackLabelField` will be annotated. Defining these values allows for the selective labelling of specific data points.
 
-> [!NOTE]
-> The label expression and formatting should be defined in the webmap. This field is strictly used to selectively highlight points within the current slide.
+`bookmark` **[Required]**: Defines the bookmark (map extent) that the map will be focused on during the slide. These are referenced by their name as saved within the webmap.
 
-`bookmark`: Defines the bookmark (map extent) that the map will be focused on during the slide. These are referenced by their name as saved within the webmap.
+`layersOn` **[Optional]**: Defines the layers that should be toggled **ON** for this specific slide. These layers are referenced by their names as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
 
-`layersOn`: Defines the layers that should be toggled **ON** for this specific slide. These layers are referenced by their names as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
+`layersOff` **[Optional]**: Defines the layers that should be toggled **OFF** for this specific slide. These layers are referenced by their names as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
 
-`layersOff`: Defines the layers that should be toggled **OFF** for this specific slide. These layers are referenced by their names as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
+`timeSyncedLayers` **[Optional]**: Defines key-value pairs of layer names and dates. These will be used to selectively toggle the visibility of layers, or group layers, within the webmap based on the current value of the time slider. This allows for choreographing map annotations.
 
-`start`: Defines the timepoint at which the time slider should **START** for the slide.
+`start` **[Required]**: Defines the timepoint at which the time slider should **START** for the slide.
 
-`end`: Defines the timepoint at which the time slider should **END** for the slide.
-
-`playRate`: Define the speed of the time slider when playing the slide. This is set in time (in milliseconds) between animation steps.
+`end` **[Required]**: Defines the timepoint at which the time slider should **END** for the slide.
 
 ---
 ## License
