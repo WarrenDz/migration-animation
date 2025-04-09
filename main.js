@@ -5,7 +5,7 @@ const timeSlider = document.querySelector("arcgis-time-slider");
 
 // Define a the mapping between slides and time ranges
 const choreographyMapping = {
-  "#slide1": { trackLayer: "Deer Points", trackField: "mig", trackLabelField: "event_id_str", trackLabelIds: ["1", "732"], mapBookmark: "Deer", mapLayersOn: ["Deer Supporting Layers"], mapLayersOff: ["Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Osprey Labels", "Osprey Sketch", "Osprey Points"], mapTimeSyncedLayers: [{ layer: "Deer Highway Annotation", visibleFrom: "2016-05-21T00:00:00Z" }], timeSliderStart: "2016-03-20T00:00:00Z", timeSliderEnd: "2016-06-18T00:00:00Z", timeSliderUnit: "hours", timeSliderStep: 2, timePlayRate: 500},
+  "#slide1": { trackLayer: "Deer Points", trackField: "mig", trackLabelField: "event_id_str", trackLabelIds: ["1", "732"], mapBookmark: "Deer", mapLayersOn: ["Deer Supporting Layers"], mapLayersOff: ["Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Osprey Labels", "Osprey Sketch", "Osprey Points"], mapTimeSyncedLayers: [{ layer: "Deer Highway Annotation", visibleFrom: "2016-05-21T00:00:00Z" }], timeSliderStart: "2016-03-20T00:00:00Z", timeSliderEnd: "2016-06-18T00:00:00Z", timeSliderUnit: "hours", timeSliderStep: 6, timePlayRate: 500},
   "#slide2": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: ["1828224806","1935895822", "1999613313", "2008282395", "2012515059", "2017197455"], mapBookmark: "Osprey", mapLayersOn: ["Osprey Labels", "Osprey Sketch"], mapLayersOff: ["Deer Points", "Deer Highway Annotation", "Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Deer Supporting Layers"], mapTimeSyncedLayers: [{ layer: "Osprey Maracaibo", visibleFrom: "2016-10-23T00:00:00Z" }, { layer: "Osprey Caesar Creek", visibleFrom: "2016-09-01T00:00:00Z" }], timeSliderStart: "2016-08-15T00:00:00Z", timeSliderEnd: "2016-11-21T00:00:00Z", timeSliderUnit: "hours", timeSliderStep: 2, timePlayRate: 2 },
   "#slide3": { trackLayer: "Whale Points", trackField: "id", trackLabelField: "event_id", trackLabelIds: ["825", "1109"], mapBookmark: "Whale", mapLayersOn: ["Global Ship Density"], mapLayersOff: ["Deer Points", "Deer Highway Annotation", "Deer Supporting Layers"], timeSyncedLayers: [{ layer: "Whale Traffic Corridor", visibleFrom: "2019-03-16T00:00:00Z" }], timeSliderStart: "2019-03-14T00:00:00Z", timeSliderEnd: "2019-03-28T00:00:00Z", timeSliderUnit: "hours", timeSliderStep: 2, timePlayRate: 125 }
 }
@@ -51,8 +51,8 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
             startField: trackStartField,
             trackIdField: trackLayerField,
             interval: {
-              unit: choreographyMapping[hash].timeUnit,
-              value: choreographyMapping[hash].timeStep
+              unit: choreographyMapping[hash].timeSliderUnit,
+              value: choreographyMapping[hash].timeSliderStep
             }
           };
           const whereClause = trackLabelField + ` IN (${trackLabelIds.map(id => `'${id}'`).join(",")})`;
@@ -121,7 +121,6 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
               }
             }
           };
-          console.log("Track renderer applied to layer:", trackLayer.title);
         }
       }
 
@@ -175,7 +174,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
 
 
       // Function to define and start the timeSlider component of the animation
-      function updateTimeSlider(timeStart, timeEnd, timeSynced, layers) {
+      function updateTimeSlider(timeStart, timeEnd, timeUnit, timeStep, timeSynced, layers) {
           // Configure the time sliders full extent with the start and end time from choreographyMapping
           const startFrame = new Date(timeStart);
           const endFrame = new Date(timeEnd);
@@ -183,8 +182,8 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           // Set the timeSlider stops
           timeSlider.stops = {
             interval: {
-              unit: choreographyMapping[hash].timeSliderUnit,
-              value: choreographyMapping[hash].timeSliderStep
+              unit: timeUnit,
+              value: timeStep
             }
           };
 
@@ -207,7 +206,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
         await applyTrackRender(choreographyMapping[hash].trackLayer, choreographyMapping[hash].trackField, choreographyMapping[hash].trackLabelField, choreographyMapping[hash].trackLabelIds); // Wait for the track renderer to be applied
         toggleLayerVisibility(layers, choreographyMapping[hash].mapLayersOn, choreographyMapping[hash].mapLayersOff);
         updateMapBookmark(choreographyMapping[hash].mapBookmark);
-        updateTimeSlider(choreographyMapping[hash].timeSliderStart, choreographyMapping[hash].timeSliderEnd, choreographyMapping[hash].timeSliderInterval, choreographyMapping[hash].timeSliderStep, choreographyMapping[hash].timeSyncedLayers, layers);
+        updateTimeSlider(choreographyMapping[hash].timeSliderStart, choreographyMapping[hash].timeSliderEnd, choreographyMapping[hash].timeSliderUnit, choreographyMapping[hash].timeSliderStep, choreographyMapping[hash].mapTimeSyncedLayers, layers);
         console.log("Map choreography updated successfully.");
       } catch (error) {
         console.error("Error updating map choreography:", error);
