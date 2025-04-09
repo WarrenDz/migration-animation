@@ -29,7 +29,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
     async function updateMapChoreography() {
       // Get the current hash of the browser window
       // Pull map choreography info
-      const hash = window.location.hash;
+      const hash = window.location.hash || "#slide1"; // if no has is present use #slide1
       console.log("Current hash:", hash);
 
       // Access the layers within the map
@@ -42,7 +42,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
       // If found configure the track renderer
       async function applyTrackRender(trackLayerName, trackLayerField, trackLabelField, trackLabelIds) {
         if (trackLayer) {
-          // these are an attempt to reset the renderer on the layer when we switch
+          // these are an attempt to do a hard reset on the renderer when we switch
           map.remove(trackLayer);
           trackLayer = trackLayer.clone();
           map.add(trackLayer);
