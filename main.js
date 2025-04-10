@@ -11,9 +11,14 @@ const choreographyMapping = {
     trackLabelField: "event_id_str",
     trackLabelIds: ["1", "732"],
     mapBookmark: "Deer",
-    mapLayersOn: ["Deer Supporting Layers", "Deer Lines Feature","DOES THIS TOGGLE"],
-    mapLayersOff: ["Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Osprey Points", "Osprey Lines Feature", "Whale Lines Feature"],
-    mapTimeSyncedLayers: [{
+    mapLayersOn: ["Deer Supporting Layers", "Deer Lines Feature"],
+    mapLayersOff: ["Osprey Waccasassa Bay", "Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Osprey Points", "Osprey Lines Feature", "Whale Lines Feature"],
+    mapTimeSyncedLayers: [
+    {
+      layer: "Deer Grazing",
+      visibleFrom: "2016-04-04T00:00:00Z"
+    },
+    {
       layer: "Deer Highway Annotation",
       visibleFrom: "2016-05-21T00:00:00Z"
     }],
@@ -29,10 +34,14 @@ const choreographyMapping = {
     trackLabelIds: ["1828224806", "1999613313", "2012515059", "2017197455"],
     mapBookmark: "Osprey",
     mapLayersOn: [],
-    mapLayersOff: ["DOES THIS TOGGLE", "Deer Points", "Deer Highway Annotation", "Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Deer Supporting Layers", "Deer Lines Feature", "Whale Lines Feature"],
+    mapLayersOff: ["Deer Grazing", "Deer Points", "Deer Highway Annotation", "Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Deer Supporting Layers", "Deer Lines Feature", "Whale Lines Feature"],
     mapTimeSyncedLayers: [{
       layer: "Osprey Caesar Creek",
       visibleFrom: "2016-09-01T00:00:00Z"
+    },
+    {
+      layer: "Osprey Waccasassa Bay",
+      visibleFrom: "2016-10-10T00:00:00Z"
     },
     { layer: "Osprey Maracaibo",
       visibleFrom: "2016-10-23T00:00:00Z"
@@ -49,7 +58,7 @@ const choreographyMapping = {
     trackLabelIds: ["825", "1109"],
     mapBookmark: "Whale",
     mapLayersOn: ["Global Ship Density", "Whale Lines Feature"],
-    mapLayersOff: ["Deer Points", "Osprey Points", "Deer Highway Annotation", "Deer Supporting Layers", "Deer Lines Feature", "Osprey Lines Feature"], 
+    mapLayersOff: ["Osprey Waccasassa Bay", "Deer Grazing", "Deer Points", "Osprey Points", "Deer Highway Annotation", "Deer Supporting Layers", "Deer Lines Feature", "Osprey Lines Feature"], 
     mapTimeSyncedLayers: [{
       layer: "Whale Traffic Corridor",
       visibleFrom: "2019-03-16T00:00:00Z"
@@ -68,12 +77,12 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
     const view = mapElement.view;
 
     // Disable map navigation
-    // view.on("mouse-wheel", (event) => {
-    //   event.stopPropagation();
-    // });
-    // view.on("drag", (event) => {
-    //   event.stopPropagation();
-    // });
+    view.on("mouse-wheel", (event) => {
+      event.stopPropagation();
+    });
+    view.on("drag", (event) => {
+      event.stopPropagation();
+    });
 
     // Access the WebMap instance from the view
     const map = view.map;
