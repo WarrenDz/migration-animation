@@ -5,9 +5,60 @@ const timeSlider = document.querySelector("arcgis-time-slider");
 
 // Define a the mapping between slides and time ranges
 const choreographyMapping = {
-  "#slide1": { trackLayer: "Deer Points", trackField: "mig", trackLabelField: "event_id_str", trackLabelIds: ["1", "732"], mapBookmark: "Deer", mapLayersOn: ["Deer Supporting Layers", "Deer Lines Feature"], mapLayersOff: ["Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Osprey Points", "Osprey Lines Feature", "Whale Lines Feature"], mapTimeSyncedLayers: [{ layer: "Deer Highway Annotation", visibleFrom: "2016-05-21T00:00:00Z" }], timeSliderStart: "2016-03-20T00:00:00Z", timeSliderEnd: "2016-06-18T00:00:00Z", timeSliderUnit: "hours", timeSliderStep: 4 },
-  "#slide2": { trackLayer: "Osprey Points", trackField: "tag_local_identifier", trackLabelField: "event_id", trackLabelIds: ["1828224806", "1999613313", "2012515059", "2017197455"], mapBookmark: "Osprey", mapLayersOn: [], mapLayersOff: ["Deer Points", "Deer Highway Annotation", "Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Deer Supporting Layers", "Deer Lines Feature", "Whale Lines Feature"], mapTimeSyncedLayers: [{ layer: "Osprey Caesar Creek", visibleFrom: "2016-09-01T00:00:00Z" }, { layer: "Osprey Maracaibo", visibleFrom: "2016-10-23T00:00:00Z" }], timeSliderStart: "2016-08-15T00:00:00Z", timeSliderEnd: "2016-11-21T00:00:00Z", timeSliderUnit: "hours", timeSliderStep: 4 },
-  "#slide3": { trackLayer: "Whale Points", trackField: "id", trackLabelField: "event_id", trackLabelIds: ["825", "1109"], mapBookmark: "Whale", mapLayersOn: ["Global Ship Density", "Whale Lines Feature"], mapLayersOff: ["Deer Points", "Osprey Points", "Deer Highway Annotation", "Deer Supporting Layers", "Deer Lines Feature", "Osprey Lines Feature"], mapTimeSyncedLayers: [{ layer: "Whale Traffic Corridor", visibleFrom: "2019-03-16T00:00:00Z" }], timeSliderStart: "2019-03-14T00:00:00Z", timeSliderEnd: "2019-03-28T00:00:00Z", timeSliderUnit: "hours", timeSliderStep: 1 }
+  "#slide1": {
+    trackLayer: "Deer Points",
+    trackField: "mig",
+    trackLabelField: "event_id_str",
+    trackLabelIds: ["1", "732"],
+    mapBookmark: "Deer",
+    mapLayersOn: ["Deer Supporting Layers", "Deer Lines Feature","DOES THIS TOGGLE"],
+    mapLayersOff: ["Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Osprey Points", "Osprey Lines Feature", "Whale Lines Feature"],
+    mapTimeSyncedLayers: [{
+      layer: "Deer Highway Annotation",
+      visibleFrom: "2016-05-21T00:00:00Z"
+    }],
+    timeSliderStart: "2016-03-20T00:00:00Z",
+    timeSliderEnd: "2016-06-18T00:00:00Z",
+    timeSliderUnit: "hours",
+    timeSliderStep: 4
+  },
+  "#slide2": {
+    trackLayer: "Osprey Points",
+    trackField: "tag_local_identifier",
+    trackLabelField: "event_id",
+    trackLabelIds: ["1828224806", "1999613313", "2012515059", "2017197455"],
+    mapBookmark: "Osprey",
+    mapLayersOn: [],
+    mapLayersOff: ["DOES THIS TOGGLE", "Deer Points", "Deer Highway Annotation", "Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Deer Supporting Layers", "Deer Lines Feature", "Whale Lines Feature"],
+    mapTimeSyncedLayers: [{
+      layer: "Osprey Caesar Creek",
+      visibleFrom: "2016-09-01T00:00:00Z"
+    },
+    { layer: "Osprey Maracaibo",
+      visibleFrom: "2016-10-23T00:00:00Z"
+    }],
+    timeSliderStart: "2016-08-15T00:00:00Z",
+    timeSliderEnd: "2016-11-21T00:00:00Z",
+    timeSliderUnit: "hours",
+    timeSliderStep: 4
+  },
+  "#slide3": {
+    trackLayer: "Whale Points",
+    trackField: "id",
+    trackLabelField: "event_id",
+    trackLabelIds: ["825", "1109"],
+    mapBookmark: "Whale",
+    mapLayersOn: ["Global Ship Density", "Whale Lines Feature"],
+    mapLayersOff: ["Deer Points", "Osprey Points", "Deer Highway Annotation", "Deer Supporting Layers", "Deer Lines Feature", "Osprey Lines Feature"], 
+    mapTimeSyncedLayers: [{
+      layer: "Whale Traffic Corridor",
+      visibleFrom: "2019-03-16T00:00:00Z"
+    }],
+    timeSliderStart: "2019-03-14T00:00:00Z",
+    timeSliderEnd: "2019-03-28T00:00:00Z",
+    timeSliderUnit: "hours",
+    timeSliderStep: 0.5
+  }
 }
 // Wait for a change in readiness from the map element
 mapElement.addEventListener("arcgisViewReadyChange", (event) => {
@@ -129,6 +180,22 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           };
         }
       }
+
+      // Function to update the map bookmark
+      function updateMapBookmark(bookmarkName) {
+        if (choreographyMapping[hash]) {
+          // Set the initial map extent by the bookmarkStart
+          const bookmarks = Array.from(bookmarksElement.bookmarks);
+          const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
+          // Find the bookmark by name
+          // If the bookmark exists, navigate to it
+          if (targetBookmark) {
+            mapElement.goTo(targetBookmark.viewpoint, { duration: 6000 });  // Navigates to the bookmark view
+          } else {
+            console.error(`Bookmark "${bookmarkName}" not found!`);
+          } 
+        }
+      }
       // Function to toggle the visibility of layers OFF based on a list of layer names
       function toggleLayerVisibility(layers, layersOn, layersOff) {
         // Iterate through the layers and toggle visibility OFF for matching titles
@@ -147,22 +214,6 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
               layer.visible = true; // Set visibility to true
             }
           });
-        }
-      }
-
-      // Function to update the map bookmark
-      function updateMapBookmark(bookmarkName) {
-        if (choreographyMapping[hash]) {
-          // Set the initial map extent by the bookmarkStart
-          const bookmarks = Array.from(bookmarksElement.bookmarks);
-          const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
-          // Find the bookmark by name
-          // If the bookmark exists, navigate to it
-          if (targetBookmark) {
-            mapElement.goTo(targetBookmark.viewpoint, { duration: 6000 });  // Navigates to the bookmark view
-          } else {
-            console.error(`Bookmark "${bookmarkName}" not found!`);
-          } 
         }
       }
 
@@ -192,11 +243,10 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
               value: timeStep
             }
           };
-
           // Listen for time extent changes
           if (timeSynced && timeSynced.length > 0) {
             timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
-              const currentTime = timeSlider.timeExtent.end;
+              let currentTime = timeSlider.timeExtent.end;
               // Update time-synced layers
               updateTimeSyncedLayers(timeSynced, currentTime, layers);
             });
@@ -209,10 +259,30 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
       }
       // Call functions
       try {
-        await applyTrackRender(choreographyMapping[hash].trackLayer, choreographyMapping[hash].trackField, choreographyMapping[hash].trackLabelField, choreographyMapping[hash].trackLabelIds); // Wait for the track renderer to be applied
+        await applyTrackRender(
+          choreographyMapping[hash].trackLayer,
+          choreographyMapping[hash].trackField,
+          choreographyMapping[hash].trackLabelField,
+          choreographyMapping[hash].trackLabelIds
+        ); // Wait for the track renderer to be applied
+
         updateMapBookmark(choreographyMapping[hash].mapBookmark);
-        toggleLayerVisibility(layers, choreographyMapping[hash].mapLayersOn, choreographyMapping[hash].mapLayersOff);
-        updateTimeSlider(choreographyMapping[hash].timeSliderStart, choreographyMapping[hash].timeSliderEnd, choreographyMapping[hash].timeSliderUnit, choreographyMapping[hash].timeSliderStep, choreographyMapping[hash].mapTimeSyncedLayers, layers);
+
+        toggleLayerVisibility(
+          layers,
+          choreographyMapping[hash].mapLayersOn,
+          choreographyMapping[hash].mapLayersOff
+        );
+
+        updateTimeSlider(
+          choreographyMapping[hash].timeSliderStart,
+          choreographyMapping[hash].timeSliderEnd,
+          choreographyMapping[hash].timeSliderUnit,
+          choreographyMapping[hash].timeSliderStep,
+          choreographyMapping[hash].mapTimeSyncedLayers,
+          layers
+        );
+
         console.log("Map choreography updated successfully.");
       } catch (error) {
         console.error("Error updating map choreography:", error);
