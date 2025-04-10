@@ -77,7 +77,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
 
     // Access the WebMap instance from the view
     const map = view.map;
-
+    let previousHash = null;
     // MAIN CHOREOGRAPHY FUNCTION
     async function updateMapChoreography() {
       // Get the current hash of the browser window
@@ -203,6 +203,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           layers.forEach((layer) => {
             if (layersOff.includes(layer.title)) {
               layer.visible = false; // Set visibility to false
+              // console.log("(-)", layer.title, "is now hidden");
             }
           });
         }
@@ -212,50 +213,68 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           layers.forEach((layer) => {
             if (layersOn.includes(layer.title)) {
               layer.visible = true; // Set visibility to true
+              // console.log("(+)", layer.title, "is now visible");
             }
           });
         }
       }
 
-      // Time synced layers function
-      function updateTimeSyncedLayers(timeSynced, currentTime, layers) {
-        timeSynced.forEach((sync) => {
-          const layer = layers.find((layer) => layer.title === sync.layer);
-          if (layer) {
-            const visibleFrom = new Date(sync.visibleFrom);
-            layer.visible = currentTime >= visibleFrom;
-          }
-        });
+      function manageTimeSyncedLayers(currentTimeSynced, previousTimeSynced, currentTime, layers) {
+        // Turn off previous time-synced layers
+        if (previousTimeSynced && previousTimeSynced.length > 0) {
+          previousTimeSynced.forEach((sync) => {
+            const layer = layers.find((layer) => layer.title === sync.layer);
+            if (layer) {
+              layer.visible = false; // Turn off the layer
+              // console.log("(-)", layer.title, "has been turned off (previous time-synced layer).");
+            }
+          });
+        }
+      
+        // Update visibility for current time-synced layers
+        if (currentTimeSynced && currentTimeSynced.length > 0) {
+          currentTimeSynced.forEach((sync) => {
+            const layer = layers.find((layer) => layer.title === sync.layer);
+            if (layer) {
+              const visibleFrom = new Date(sync.visibleFrom);
+              layer.visible = currentTime >= visibleFrom; // Set visibility based on the current time
+              // console.log(
+              //   layer.visible
+              //     ? "(+)" + layer.title + " is now visible (current time-synced layer)."
+              //     : "(-)" + layer.title + " remains hidden (current time-synced layer)."
+              // );
+            }
+          });
+        }
       }
 
-
       // Function to define and start the timeSlider component of the animation
-      function updateTimeSlider(timeStart, timeEnd, timeUnit, timeStep, timeSynced, layers) {
-          // Configure the time sliders full extent with the start and end time from choreographyMapping
-          const startFrame = new Date(timeStart);
-          const endFrame = new Date(timeEnd);
-          timeSlider.fullTimeExtent = {start: startFrame, end: endFrame};
-          timeSlider.timeExtent = {start: null, end: startFrame}
-          // Set the timeSlider stops
-          timeSlider.stops = {
-            interval: {
-              unit: timeUnit,
-              value: timeStep
-            }
-          };
-          // Listen for time extent changes
-          if (timeSynced && timeSynced.length > 0) {
-            timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
-              let currentTime = timeSlider.timeExtent.end;
-              // Update time-synced layers
-              updateTimeSyncedLayers(timeSynced, currentTime, layers);
-            });
+      function updateTimeSlider(timeStart, timeEnd, timeUnit, timeStep, timeSynced, layers, previousTimeSynced) {
+        // Configure the time sliders full extent with the start and end time from choreographyMapping
+        const startFrame = new Date(timeStart);
+        const endFrame = new Date(timeEnd);
+        timeSlider.fullTimeExtent = {start: startFrame, end: endFrame};
+        timeSlider.timeExtent = {start: null, end: startFrame}
+        // Set the timeSlider stops
+        timeSlider.stops = {
+          interval: {
+            unit: timeUnit,
+            value: timeStep
           }
-          
-          // Start a TimeSlider animation if not already playing
-          if (timeSlider.state === "ready") {
-            timeSlider.play();
-          }
+        };
+        // Listen for time extent changes
+        if (timeSynced && timeSynced.length > 0) {
+          timeSlider.addEventListener("arcgisPropertyChange", async (event) => {
+            let currentTime = timeSlider.timeExtent.end;
+            // Update time-synced layers
+            manageTimeSyncedLayers(timeSynced, previousTimeSynced, currentTime, layers);
+          });
+        }
+        
+        // Start a TimeSlider animation if not already playing
+        if (timeSlider.state === "ready") {
+          timeSlider.play();
+        }
       }
       // Call functions
       try {
@@ -268,20 +287,24 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
 
         updateMapBookmark(choreographyMapping[hash].mapBookmark);
 
-        toggleLayerVisibility(
-          layers,
-          choreographyMapping[hash].mapLayersOn,
-          choreographyMapping[hash].mapLayersOff
-        );
-
         updateTimeSlider(
           choreographyMapping[hash].timeSliderStart,
           choreographyMapping[hash].timeSliderEnd,
           choreographyMapping[hash].timeSliderUnit,
           choreographyMapping[hash].timeSliderStep,
           choreographyMapping[hash].mapTimeSyncedLayers,
-          layers
+          layers,
+          choreographyMapping[previousHash]?.mapTimeSyncedLayers || []
         );
+
+        toggleLayerVisibility(
+          layers,
+          choreographyMapping[hash].mapLayersOn,
+          choreographyMapping[hash].mapLayersOff
+        );
+
+        // Update the previous hash
+        previousHash = hash;
 
         console.log("Map choreography updated successfully.");
       } catch (error) {
