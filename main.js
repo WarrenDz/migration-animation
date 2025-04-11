@@ -1,5 +1,5 @@
 // Set DEBUG to true to enable debug logging
-const DEBUG = true;
+const DEBUG = false;
 
 function log(...args) {
   if (DEBUG) {
