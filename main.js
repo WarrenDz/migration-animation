@@ -1,3 +1,12 @@
+// Set DEBUG to true to enable debug logging
+const DEBUG = false;
+
+function log(...args) {
+  if (DEBUG) {
+    console.log(...args);
+  }
+}
+
 // Define the map and bookmarks components
 const mapElement = document.querySelector("arcgis-map");
 const bookmarksElement = document.querySelector("arcgis-bookmarks");
@@ -73,6 +82,9 @@ const choreographyMapping = {
 mapElement.addEventListener("arcgisViewReadyChange", (event) => {
   // When the map is ready...
   if (event.target.ready) {
+    // Assign a previous hash variable to store the last hash
+    let previousHash = null;
+
     // Access the MapView from the arcgis-map component
     const view = mapElement.view;
 
@@ -86,13 +98,13 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
 
     // Access the WebMap instance from the view
     const map = view.map;
-    let previousHash = null;
+
     // MAIN CHOREOGRAPHY FUNCTION
     async function updateMapChoreography() {
       // Get the current hash of the browser window
-      // Pull map choreography info
+      // Use this to pull map choreography info
       let hash = window.location.hash || "#slide1"; // if no has is present use #slide1
-      console.log("Current hash:", hash);
+      log("Current hash:", hash);
 
       // Access the layers within the map
       const layers = map.layers;
@@ -104,12 +116,12 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
       // If found configure the track renderer
       async function applyTrackRender(trackLayerName, trackLayerField, trackLabelField, trackLabelIds) {
         if (trackLayer) {
-          // these are an attempt to do a hard reset on the renderer when we switch
+          // these are an attempt to do a hard reset on the renderer when we switch hashes
           map.remove(trackLayer);
           trackLayer = trackLayer.clone();
           map.add(trackLayer);
           //
-          console.log("Found track layer named:", trackLayerName);
+          log("Found track layer named:", trackLayer.title);
           await trackLayer.when(); // Wait for the layer to load
           const trackStartField = trackLayer.timeInfo.startField;
           trackLayer.visible = true; // Make the layer visible
@@ -205,56 +217,50 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           } 
         }
       }
-      // Function to toggle the visibility of layers OFF based on a list of layer names
-      function toggleLayerVisibility(layers, layersOn, layersOff) {
-        // Iterate through the layers and toggle visibility OFF for matching titles
-        if (layersOff && layersOff.length > 0) {
+      // Function to toggle the visibility of a list of layer names
+      function setLayerVisibility(layers, layerNames, visibility) {
+        if (layerNames && layerNames.length > 0) {
           layers.forEach((layer) => {
-            if (layersOff.includes(layer.title)) {
-              layer.visible = false; // Set visibility to false
-              // console.log("(-)", layer.title, "is now hidden");
-            }
-          });
-        }
-
-        // Iterate through the layers and toggle visibility ON for matching titles
-        if (layersOn && layersOn.length > 0) {
-          layers.forEach((layer) => {
-            if (layersOn.includes(layer.title)) {
-              layer.visible = true; // Set visibility to true
-              // console.log("(+)", layer.title, "is now visible");
+            if (layerNames.includes(layer.title)) {
+              layer.visible = visibility; // Set visibility based on the argument
+              log(
+                visibility
+                  ? "(+) " + layer.title + " is now visible."
+                  : "(-) " + layer.title + " is now hidden."
+              );
             }
           });
         }
       }
-
+      // This function manages the visibility of time-synced layers
+      // It only turns these layers on in the map if the current time is greater than the visibleFrom date
       function manageTimeSyncedLayers(currentTimeSynced, previousTimeSynced, currentTime, layers) {
-        // Turn off previous time-synced layers
-        if (previousTimeSynced && previousTimeSynced.length > 0) {
-          previousTimeSynced.forEach((sync) => {
-            const layer = layers.find((layer) => layer.title === sync.layer);
-            if (layer) {
-              layer.visible = false; // Turn off the layer
-              // console.log("(-)", layer.title, "has been turned off (previous time-synced layer).");
-            }
-          });
+        // Create a map of layers for efficient lookups
+        let layerMap = new Map(layers.map((layer) => [layer.title, layer]));
+      
+        // Function to set the visibility of layers based on time-synced data
+        function updateLayerVisibility(timeSynced) {
+          if (timeSynced && timeSynced.length > 0) {
+            timeSynced.forEach((sync) => {
+              const layer = layerMap.get(sync.layer);
+              if (layer) {
+                const visibleFrom = new Date(sync.visibleFrom);
+                layer.visible = currentTime >= visibleFrom;
+                log(
+                  layer.visible
+                    ? "(+) " + layer.title + " is now visible (current time-synced layer)."
+                    : "(-) " + layer.title + " remains hidden (current time-synced layer)."
+                );
+              }
+            });
+          }
         }
       
-        // Update visibility for current time-synced layers
-        if (currentTimeSynced && currentTimeSynced.length > 0) {
-          currentTimeSynced.forEach((sync) => {
-            const layer = layers.find((layer) => layer.title === sync.layer);
-            if (layer) {
-              const visibleFrom = new Date(sync.visibleFrom);
-              layer.visible = currentTime >= visibleFrom; // Set visibility based on the current time
-              // console.log(
-              //   layer.visible
-              //     ? "(+)" + layer.title + " is now visible (current time-synced layer)."
-              //     : "(-)" + layer.title + " remains hidden (current time-synced layer)."
-              // );
-            }
-          });
-        }
+      // Turn off previous layers
+      setLayerVisibility(layerMap, previousTimeSynced.map(sync => sync.layer), false);
+      
+        // Update visibility for current layers
+        updateLayerVisibility(currentTimeSynced);
       }
 
       // Function to define and start the timeSlider component of the animation
@@ -305,26 +311,28 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           layers,
           choreographyMapping[previousHash]?.mapTimeSyncedLayers || []
         );
-
-        toggleLayerVisibility(
-          layers,
-          choreographyMapping[hash].mapLayersOn,
-          choreographyMapping[hash].mapLayersOff
-        );
+        // Turn off layer visibility
+        if (choreographyMapping[hash].mapLayersOn.length > 0) {
+          setLayerVisibility(layers, choreographyMapping[hash].mapLayersOn, true);
+        }
+        // Turn on layer visibility
+        if (choreographyMapping[hash].mapLayersOff.length > 0) {
+          setLayerVisibility(layers, choreographyMapping[hash].mapLayersOff, false);
+        }
 
         // Update the previous hash
         previousHash = hash;
 
-        console.log("Map choreography updated successfully.");
+        log("Map choreography updated successfully.");
       } catch (error) {
         console.error("Error updating map choreography:", error);
       }
     }
-    //updateChoreographyFromHash();
+    // Call the updateMapChoreography function to set the initial state
     updateMapChoreography()
-    // Listen for hash changes to update the choreography
+    // Listen for hash changes and update the choreography
     window.addEventListener("hashchange", async () => {
-      await updateMapChoreography(); // Reapply choreography logic
+      await updateMapChoreography();
     });
   }
 });
