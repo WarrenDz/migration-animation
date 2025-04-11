@@ -48,7 +48,28 @@ The `main.js` file contains the core logic for the application. It handles map i
 3. Open the `main.js` file and inspect the `choreographyMapping`. Update the key-value pairs with the values relevant to the story you want to tell with your data. The specifics of each key-value pair and the effect they have is described in [detail below](#choreographymapping).
 ```js
 const choreographyMapping = {
-  "#slide1": { trackLayer: "Deer Points", trackField: "mig", trackLabelField: "event_id_str", trackLabelIds: ["1", "732"], mapBookmark: "Deer", mapLayersOn: ["Deer Supporting Layers"], mapLayersOff: ["Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Osprey Labels", "Osprey Sketch", "Osprey Points"], mapTimeSyncedLayers: [{ layer: "Deer Highway Annotation", visibleFrom: "2016-05-21T00:00:00Z" }], timeSliderStart: "2016-03-20T00:00:00Z", timeSliderEnd: "2016-06-18T00:00:00Z", timeSliderUnit: "hours", timeSliderStep: 2, timePlayRate: 500}
+  "#slide1": {
+    trackLayer: "Deer Points",
+    trackField: "mig",
+    trackLabelField: "event_id_str",
+    trackLabelIds: ["1", "732"],
+    mapBookmark: "Deer",
+    mapLayersOn: ["Deer Supporting Layers", "Deer Lines Feature"],
+    mapLayersOff: ["Osprey Waccasassa Bay", "Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Osprey Points", "Osprey Lines Feature", "Whale Lines Feature"],
+    mapTimeSyncedLayers: [
+    {
+      layer: "Deer Grazing",
+      visibleFrom: "2016-04-04T00:00:00Z"
+    },
+    {
+      layer: "Deer Highway Annotation",
+      visibleFrom: "2016-05-21T00:00:00Z"
+    }],
+    timeSliderStart: "2016-03-20T00:00:00Z",
+    timeSliderEnd: "2016-06-18T00:00:00Z",
+    timeSliderUnit: "hours",
+    timeSliderStep: 4
+  }
 }
 ```
 4. Once published/hosted, the url can be embedded across a sequence of slides within a sidecar of an ArcGIS StoryMap using the hashes.
@@ -66,17 +87,21 @@ Each of these named hashes contains a number of **key-value** pairs describing w
 
 `trackLabelIds`: Defines a list of values that appear within the `trackLabelField`. Only data points within the `trackLayer` that have these values in the `trackLabelField` will be annotated. Defining these values allows for the selective labelling of specific data points.
 
-`bookmark` **[Required]**: Defines the bookmark (map extent) that the map will be focused on during the slide. These are referenced by their name as saved within the webmap.
+`mapBookmark` **[Required]**: Defines the bookmark (map extent) that the map will be focused on during the slide. These are referenced by their name as saved within the webmap.
 
-`layersOn` **[Optional]**: Defines the layers that should be toggled **ON** for this specific slide. These layers are referenced by their names as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
+`mapLayersOn` **[Optional]**: Defines the layers that should be toggled **ON** for this specific slide. These layers are referenced by their names as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
 
-`layersOff` **[Optional]**: Defines the layers that should be toggled **OFF** for this specific slide. These layers are referenced by their names as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
+`mapLayersOff` **[Optional]**: Defines the layers that should be toggled **OFF** for this specific slide. These layers are referenced by their names as it appears in the layer list of the webmap defined in the `<arcgis-map>` element within the `index.html` file.
 
-`timeSyncedLayers` **[Optional]**: Defines key-value pairs of layer names and dates. These will be used to selectively toggle the visibility of layers, or group layers, within the webmap based on the current value of the time slider. This allows for choreographing map annotations.
+`mapTimeSyncedLayers` **[Optional]**: Defines key-value pairs of layer names and dates. These will be used to selectively toggle the visibility of layers, or group layers, within the webmap based on the current value of the time slider. This allows for choreographing map annotations.
 
-`start` **[Required]**: Defines the timepoint at which the time slider should **START** for the slide.
+`timeSliderStart` **[Required]**: Defines the timepoint at which the time slider should **START** for the slide.
 
-`end` **[Required]**: Defines the timepoint at which the time slider should **END** for the slide.
+`timeSliderEnd` **[Required]**: Defines the timepoint at which the time slider should **END** for the slide.
+
+`timeSliderUnit` **[Required]**: Defines the temporal unit of the time slider's `TimeInterval`. This can be "minutes", "hours", "days", "weeks", etc.
+
+`timeSliderStep` **[Required]**: Defines the number of `timeSliderUnits` within each step of the time slider.
 
 ---
 ## License
