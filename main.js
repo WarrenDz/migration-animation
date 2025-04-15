@@ -9,7 +9,6 @@ function log(...args) {
 
 // Define the map and bookmarks components
 const mapElement = document.querySelector("arcgis-map");
-const bookmarksElement = document.querySelector("arcgis-bookmarks");
 const timeSlider = document.querySelector("arcgis-time-slider");
 
 // Define a the mapping between slides and time ranges
@@ -58,7 +57,7 @@ const choreographyMapping = {
     timeSliderStart: "2016-08-15T00:00:00Z",
     timeSliderEnd: "2016-11-21T00:00:00Z",
     timeSliderUnit: "hours",
-    timeSliderStep: 4
+    timeSliderStep: 6
   },
   "#slide3": {
     trackLayer: "Whale Points",
@@ -206,7 +205,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
       function updateMapBookmark(bookmarkName) {
         if (choreographyMapping[hash]) {
           // Set the initial map extent by the bookmarkStart
-          const bookmarks = Array.from(bookmarksElement.bookmarks);
+          const bookmarks = view.map.bookmarks; // Get the bookmarks array from the WebMap
           const targetBookmark = bookmarks.find(b => b.name === bookmarkName);
           // Find the bookmark by name
           // If the bookmark exists, navigate to it
