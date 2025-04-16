@@ -164,8 +164,9 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
                     haloColor: "black",
                     haloSize: 1.5,
                     font: {
-                      family: "sans-serif",
-                      size: 10
+                      family: "Noto Sans",
+                      size: 10,
+                      weight: "bold"
                     }
                   },
                   labelPlacement: "above-right",
