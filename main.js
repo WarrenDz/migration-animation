@@ -20,7 +20,7 @@ const choreographyMapping = {
     trackLabelIds: ["1", "732"],
     mapBookmark: "Deer",
     mapLayersOn: ["Deer Supporting Layers", "Deer Lines Feature"],
-    mapLayersOff: ["Osprey Waccasassa Bay", "Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Osprey Points", "Osprey Lines Feature", "Whale Lines Feature"],
+    mapLayersOff: ["Osprey Audubon Island", "Osprey Waccasassa Bay", "Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Osprey Points", "Osprey Lines Feature", "Whale Lines Feature"],
     mapTimeSyncedLayers: [
     {
       layer: "Deer Grazing",
@@ -70,7 +70,7 @@ const choreographyMapping = {
     trackLabelIds: ["825", "1109"],
     mapBookmark: "Whale",
     mapLayersOn: ["Global Ship Density", "Whale Lines Feature"],
-    mapLayersOff: ["Osprey Waccasassa Bay", "Deer Grazing", "Deer Points", "Osprey Points", "Deer Highway Annotation", "Deer Supporting Layers", "Deer Lines Feature", "Osprey Lines Feature"], 
+    mapLayersOff: ["Osprey Audubon Island", "Osprey Waccasassa Bay", "Deer Grazing", "Deer Points", "Osprey Points", "Deer Highway Annotation", "Deer Supporting Layers", "Deer Lines Feature", "Osprey Lines Feature"], 
     mapTimeSyncedLayers: [{
       layer: "Whale Traffic Corridor",
       visibleFrom: "2019-03-16T00:00:00Z"
