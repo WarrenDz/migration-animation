@@ -45,7 +45,7 @@ const choreographyMapping = {
     mapLayersOff: ["Deer Grazing", "Deer Points", "Deer Highway Annotation", "Whale Points", "Whale Traffic Corridor", "Global Ship Density", "Deer Supporting Layers", "Deer Lines Feature", "Whale Lines Feature"],
     mapTimeSyncedLayers: [{
       layer: "Osprey Audubon Island",
-      visibleFrom: "2016-09-01T00:00:00Z"
+      visibleFrom: "2016-08-22T00:00:00Z"
     },
     {
       layer: "Osprey Caesar Creek",
