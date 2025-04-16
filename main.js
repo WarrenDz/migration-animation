@@ -169,7 +169,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
                     haloSize: 1.5,
                     font: {
                       family: "Noto Sans",
-                      size: 10,
+                      size: 8,
                       weight: "bold"
                     }
                   },
