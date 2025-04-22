@@ -10,6 +10,7 @@ function log(...args) {
 // Define the map and bookmarks components
 const mapElement = document.querySelector("arcgis-map");
 const timeSlider = document.querySelector("arcgis-time-slider");
+const resetButton = document.querySelector("#reset-button");
 
 // Define a the mapping between slides and time ranges
 const choreographyMapping = {
@@ -87,6 +88,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
   if (event.target.ready) {
     // Assign a previous hash variable to store the last hash
     let previousHash = null;
+    let hash = window.location.hash || "#slide1"; // if no has is present use #slide1
 
     // Access the MapView from the arcgis-map component
     const view = mapElement.view;
@@ -332,6 +334,29 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
         console.error("Error updating map choreography:", error);
       }
     }
+
+    // Add reset animation button
+    resetButton.addEventListener("click", () => {
+      const config = choreographyMapping[hash];
+      if (config) {
+        // Reset the time slider to its initial state
+        timeSlider.timeExtent = {
+          start: null,
+          end: new Date(config.timeSliderStart)
+        };
+  
+        // Replay the animation
+        if (timeSlider.state === "ready") {
+          timeSlider.play();
+        }
+  
+        log("Animation reset and replayed.");
+      } else {
+        console.error("No configuration found for the current hash.");
+      }
+    });
+
+
     // Call the updateMapChoreography function to set the initial state
     updateMapChoreography()
     // Listen for hash changes and update the choreography
