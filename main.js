@@ -33,7 +33,7 @@ const choreographyMapping = {
     timeSliderStart: "2016-03-20T00:00:00Z",
     timeSliderEnd: "2016-06-18T00:00:00Z",
     timeSliderUnit: "hours",
-    timeSliderStep: 4
+    timeSliderStep: 3
   },
   "#slide2": {
     trackLayer: "Osprey Points",
