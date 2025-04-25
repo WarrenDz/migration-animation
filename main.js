@@ -177,7 +177,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
                   },
                   labelPlacement: "above-right",
                   labelExpressionInfo: {
-                    expression: "Text($feature." + trackStartField + ", 'dddd, MMMM D, Y')"
+                    expression: "Text($feature." + trackStartField + ", 'MMMM D, Y')"
                   },
                   where: whereClause
                 }
