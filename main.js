@@ -217,7 +217,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
           // Find the bookmark by name
           // If the bookmark exists, navigate to it
           if (targetBookmark) {
-            mapElement.goTo(targetBookmark.viewpoint, { duration: 6000 });  // Navigates to the bookmark view
+            mapElement.goTo(targetBookmark.viewpoint.targetGeometry, { duration: 6000 });  // Navigates to the bookmark view
           } else {
             console.error(`Bookmark "${bookmarkName}" not found!`);
           } 
