@@ -188,7 +188,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
                   type: "simple-marker",
                   style: "circle",
                   color: "white",
-                  size: 3
+                  size: 2.5
                 }
               }
             },
@@ -200,7 +200,7 @@ mapElement.addEventListener("arcgisViewReadyChange", (event) => {
                 symbol: {
                   type: "simple-line",
                   color: "black",
-                  width: 3
+                  width: 2.5
                 }
               }
             }
